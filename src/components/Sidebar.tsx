@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { NavLink } from 'react-router-dom';
 import { 
   Compass, 
@@ -9,70 +9,66 @@ import {
   TerminalSquare, 
   Database,
   Hash,
-  Palette
+  Box,
+  Search
 } from 'lucide-react';
 
+const TOOLS_CONFIG = [
+  { path: '/', name: '网站导航', icon: Compass, group: '导航' },
+  { path: '/tools/encode', name: 'URL / Base64 / JWT', icon: Code2, group: '编码与解码' },
+  { path: '/tools/json', name: 'JSON / YAML 专业版', icon: FileJson, group: '格式化与转换' },
+  { path: '/tools/docker', name: 'Docker 到 Compose', icon: Box, group: '格式化与转换' },
+  { path: '/tools/diff', name: '文本 Diff 对比', icon: FileJson, group: '开发辅助' },
+  { path: '/tools/time', name: 'Cron & 时间戳', icon: Clock, group: '时间与计划' },
+  { path: '/tools/data', name: 'Mock数据 & UUID', icon: Database, group: '开发辅助' },
+  { path: '/tools/crypto', name: 'Hash & Crypto', icon: Hash, group: '开发辅助' },
+  { path: '/tools/cheatsheets', name: '命令备忘录', icon: BookOpen, group: '开发辅助' },
+];
+
 export const Sidebar: React.FC = () => {
+  const [searchTerm, setSearchTerm] = useState('');
+
+  const filteredTools = TOOLS_CONFIG.filter(tool => 
+    tool.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+    tool.group.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const groups = Array.from(new Set(filteredTools.map(t => t.group)));
+
   return (
     <aside className="sidebar">
       <div className="sidebar-header">
         <TerminalSquare className="w-6 h-6 text-sky-400" />
-        <span>Dev Portal</span>
+        <span>DevTools Pro</span>
       </div>
       
+      <div className="sidebar-search">
+        <Search size={16} className="search-icon" />
+        <input 
+          type="text" 
+          placeholder="搜索工具..." 
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+        />
+      </div>
+
       <nav className="sidebar-nav">
-        <NavLink to="/" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`} end>
-          <Compass size={18} />
-          <span>网站导航</span>
-        </NavLink>
-
-        <div className="sidebar-group">
-          <div className="sidebar-group-title">编码与解码</div>
-          <NavLink to="/tools/encode" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
-            <Code2 size={18} />
-            <span>URL / Base64 / JWT</span>
-          </NavLink>
-        </div>
-
-        <div className="sidebar-group">
-          <div className="sidebar-group-title">格式化与转换</div>
-          <NavLink to="/tools/json" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
-            <FileJson size={18} />
-            <span>JSON / YAML 工具</span>
-          </NavLink>
-        </div>
-
-        <div className="sidebar-group">
-          <div className="sidebar-group-title">时间与计划</div>
-          <NavLink to="/tools/time" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
-            <Clock size={18} />
-            <span>Cron & 时间戳</span>
-          </NavLink>
-        </div>
-
-        <div className="sidebar-group">
-          <div className="sidebar-group-title">开发辅助</div>
-          <NavLink to="/tools/data" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
-            <Database size={18} />
-            <span>Mock数据 & UUID</span>
-          </NavLink>
-          <NavLink to="/tools/crypto" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
-            <Hash size={18} />
-            <span>Hash & Crypto</span>
-          </NavLink>
-          <NavLink to="/tools/cheatsheets" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
-            <BookOpen size={18} />
-            <span>命令备忘录</span>
-          </NavLink>
-        </div>
-
-        <div className="sidebar-group">
-          <div className="sidebar-group-title">前端与 UI</div>
-          <NavLink to="/tools/css" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
-            <Palette size={18} />
-            <span>CSS 生成器</span>
-          </NavLink>
-        </div>
+        {groups.map(group => (
+          <div key={group} className="sidebar-group">
+            <div className="sidebar-group-title">{group}</div>
+            {filteredTools.filter(t => t.group === group).map(tool => (
+              <NavLink key={tool.path} to={tool.path} className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`} end={tool.path === '/'}>
+                <tool.icon size={18} />
+                <span>{tool.name}</span>
+              </NavLink>
+            ))}
+          </div>
+        ))}
+        {filteredTools.length === 0 && (
+          <div style={{ padding: '1rem', color: '#64748b', fontSize: '0.875rem', textAlign: 'center' }}>
+            未找到工具
+          </div>
+        )}
       </nav>
     </aside>
   );

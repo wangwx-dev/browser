@@ -84,23 +84,33 @@ export default function EncodeTools() {
 
       <div className="tool-card">
         <div className="tool-header">
-          <h2>JWT (JSON Web Token) 解析</h2>
-          <p>本地解析 JWT Token 提取 Header 和 Payload 信息，安全可靠不走网络传输。</p>
+          <h2>JWT 专业解析器</h2>
+          <p>解析 JWT 提取 Header 和 Payload，并提供可选的验签功能 (仅支持 HMAC HMAC256)</p>
         </div>
-        <div className="input-group">
-          <textarea 
-            className="form-control" 
-            placeholder="粘贴 eyJhbG... 格式的 JWT 字符串"
-            value={jwtInput}
-            onChange={(e) => {
-              setJwtInput(e.target.value);
-            }}
-          />
+        <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
+          <div style={{ flex: 1, minWidth: '300px' }}>
+            <div className="input-group">
+              <label>JWT 字符串</label>
+              <textarea 
+                className="form-control" 
+                placeholder="粘贴 eyJhbG... 格式的 JWT"
+                style={{ height: '150px' }}
+                value={jwtInput}
+                onChange={(e) => setJwtInput(e.target.value)}
+              />
+            </div>
+          </div>
+          <div style={{ flex: 1, minWidth: '300px', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            <div className="button-group" style={{ marginBottom: 0 }}>
+              <button className="btn" onClick={handleJwtDecode}>解析 Token ➔</button>
+            </div>
+            {jwtOutput && (
+              <div className="result-box" style={{ flex: 1, margin: 0, maxHeight: '200px' }}>
+                {jwtOutput}
+              </div>
+            )}
+          </div>
         </div>
-        <div className="button-group">
-          <button className="btn" onClick={handleJwtDecode}>解析 Token</button>
-        </div>
-        {jwtOutput && <div className="result-box">{jwtOutput}</div>}
       </div>
     </div>
   );
