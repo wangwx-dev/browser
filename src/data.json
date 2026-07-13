@@ -1,0 +1,65 @@
+[
+  {
+    "category": "常用工具",
+    "links": [
+      {
+        "name": "GitHub",
+        "url": "https://github.com",
+        "desc": "代码托管平台",
+        "icon": "https://github.com/favicon.ico"
+      },
+      {
+        "name": "Google",
+        "url": "https://google.com",
+        "desc": "搜索引擎",
+        "icon": "https://www.google.com/favicon.ico"
+      },
+      {
+        "name": "Cloudflare",
+        "url": "https://cloudflare.com",
+        "desc": "CDN 与 DNS 服务",
+        "icon": "https://www.cloudflare.com/favicon.ico"
+      }
+    ]
+  },
+  {
+    "category": "开发文档",
+    "links": [
+      {
+        "name": "React",
+        "url": "https://react.dev",
+        "desc": "用于构建用户界面的 JavaScript 库",
+        "icon": "https://react.dev/favicon.ico"
+      },
+      {
+        "name": "Vite",
+        "url": "https://vitejs.dev",
+        "desc": "下一代前端开发与构建工具",
+        "icon": "https://vitejs.dev/logo.svg"
+      },
+      {
+        "name": "TypeScript",
+        "url": "https://www.typescriptlang.org/",
+        "desc": "JavaScript 的超集",
+        "icon": "https://www.typescriptlang.org/favicon.ico"
+      }
+    ]
+  },
+  {
+    "category": "AI 工具",
+    "links": [
+      {
+        "name": "ChatGPT",
+        "url": "https://chatgpt.com",
+        "desc": "OpenAI 聊天机器人",
+        "icon": "https://chatgpt.com/favicon.ico"
+      },
+      {
+        "name": "Gemini",
+        "url": "https://gemini.google.com",
+        "desc": "Google AI 模型",
+        "icon": "https://www.gstatic.com/lamda/images/favicon_v1_150160cddff7f294ce30.svg"
+      }
+    ]
+  }
+]
