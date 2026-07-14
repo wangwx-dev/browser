@@ -1,129 +1,135 @@
-import { useState } from 'react';
-
-const CHEATSHEETS = {
-  git: `
-# Git 常用命令
-
-## 基本操作
-git init                    # 初始化仓库
-git clone <url>             # 克隆远程仓库
-git status                  # 查看状态
-git add .                   # 暂存所有更改
-git commit -m "msg"         # 提交更改
-git push origin main        # 推送到远程 main 分支
-git pull                    # 拉取远程更改
-
-## 分支管理
-git branch                  # 列出所有本地分支
-git branch -a               # 列出所有本地和远程分支
-git checkout -b <branch>    # 创建并切换到新分支
-git merge <branch>          # 合并指定分支到当前分支
-git branch -d <branch>      # 删除分支
-
-## 回滚与撤销
-git reset --hard HEAD       # 抛弃工作区和暂存区的所有修改
-git reset --soft HEAD~1     # 撤销上一次 commit，保留代码更改
-git revert <commit>         # 生成一个新提交来撤销指定提交
-git checkout -- <file>      # 丢弃工作区中特定文件的修改
-  `,
-  linux: `
-# Linux 常用命令
-
-## 文件与目录
-ls -la                      # 列出包含隐藏文件的详细信息
-cd /path                    # 切换目录
-pwd                         # 显示当前路径
-mkdir -p a/b/c              # 递归创建目录
-rm -rf <dir>                # 强制递归删除目录
-cp -r <src> <dest>          # 递归复制
-mv <src> <dest>             # 移动/重命名文件或目录
-
-## 进程与系统
-top / htop                  # 查看系统资源和进程
-ps aux | grep <name>        # 查找特定进程
-kill -9 <pid>               # 强制杀死进程
-df -h                       # 查看磁盘可用空间
-free -m                     # 查看内存使用情况
-tail -f <file>              # 实时查看日志文件末尾
-
-## 网络
-ping <host>                 # 测试网络连通性
-curl -O <url>               # 下载文件
-netstat -tulpn              # 查看端口占用
-  `,
-  windows: `
-# Windows (PowerShell/CMD) 常用命令
-
-## 基础命令
-dir / ls                    # 列出目录内容
-cd / sl                     # 改变当前目录
-mkdir / md                  # 创建目录
-del / rm                    # 删除文件
-rmdir /s /q <dir>           # 强制递归删除目录 (CMD)
-Remove-Item -Recurse -Force <dir> # 强制递归删除目录 (PowerShell)
-
-## 网络排查
-ipconfig /all               # 查看网络配置
-ping <host>                 # 测试连通性
-tracert <host>              # 路由追踪
-netstat -ano                # 查看端口及对应的 PID
-Test-NetConnection -ComputerName <host> -Port <port> # 测试端口连通性 (PowerShell)
-
-## 系统与进程
-tasklist                    # 列出所有进程
-taskkill /F /PID <pid>      # 强制结束指定进程
-Get-Process                 # 列出进程 (PowerShell)
-Stop-Process -Id <pid>      # 结束进程 (PowerShell)
-  `,
-  http: `
-# HTTP 状态码速查
-
-## 2xx (成功)
-200 OK                      # 请求成功
-201 Created                 # 资源被成功创建
-204 No Content              # 请求成功，但无返回内容
-
-## 3xx (重定向)
-301 Moved Permanently       # 永久重定向
-302 Found                   # 临时重定向
-304 Not Modified            # 资源未修改，使用缓存
-
-## 4xx (客户端错误)
-400 Bad Request             # 请求参数有误或语法错误
-401 Unauthorized            # 未授权，需登录
-403 Forbidden               # 拒绝访问，权限不足
-404 Not Found               # 资源不存在
-405 Method Not Allowed      # 请求方法不被允许
-429 Too Many Requests       # 请求过于频繁
-
-## 5xx (服务器错误)
-500 Internal Server Error   # 服务器内部错误
-502 Bad Gateway             # 网关错误
-503 Service Unavailable     # 服务不可用（超载或停机维护）
-504 Gateway Timeout         # 网关超时
-  `
-};
+import { useState, useMemo } from 'react';
+import { Search, Copy, Check, Terminal } from 'lucide-react';
+import { CHEATSHEETS_DATA } from '../../data/cheatsheets';
 
 export default function Cheatsheets() {
-  const [activeTab, setActiveTab] = useState<'git' | 'linux' | 'windows' | 'http'>('git');
+  const [activeTab, setActiveTab] = useState(CHEATSHEETS_DATA[0].id);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [copiedCmd, setCopiedCmd] = useState<string | null>(null);
+
+  const activeSheet = CHEATSHEETS_DATA.find(s => s.id === activeTab) || CHEATSHEETS_DATA[0];
+
+  const filteredCategories = useMemo(() => {
+    if (!searchQuery.trim()) return activeSheet.categories;
+    const query = searchQuery.toLowerCase();
+    
+    return activeSheet.categories.map(cat => ({
+      ...cat,
+      items: cat.items.filter(item => 
+        item.cmd.toLowerCase().includes(query) || 
+        item.desc.toLowerCase().includes(query)
+      )
+    })).filter(cat => cat.items.length > 0);
+  }, [searchQuery, activeSheet]);
+
+  const handleCopy = async (cmd: string) => {
+    try {
+      await navigator.clipboard.writeText(cmd);
+      setCopiedCmd(cmd);
+      setTimeout(() => setCopiedCmd(null), 2000);
+    } catch (err) {
+      console.error('Failed to copy', err);
+    }
+  };
 
   return (
-    <div className="page-container">
-      <div className="header">
-        <h1>命令备忘录 (Cheatsheets)</h1>
-      </div>
-
-      <div className="tool-card">
-        <div className="button-group" style={{ borderBottom: '1px solid var(--glass-border)', paddingBottom: '1rem' }}>
-          <button className={`btn ${activeTab === 'git' ? '' : 'btn-secondary'}`} onClick={() => setActiveTab('git')}>Git</button>
-          <button className={`btn ${activeTab === 'linux' ? '' : 'btn-secondary'}`} onClick={() => setActiveTab('linux')}>Linux</button>
-          <button className={`btn ${activeTab === 'windows' ? '' : 'btn-secondary'}`} onClick={() => setActiveTab('windows')}>Windows</button>
-          <button className={`btn ${activeTab === 'http' ? '' : 'btn-secondary'}`} onClick={() => setActiveTab('http')}>HTTP 状态码</button>
+    <div className="page-container" style={{ maxWidth: '1200px' }}>
+      <div className="header" style={{ flexDirection: 'column', alignItems: 'stretch', gap: '1rem' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <h1>命令速查备忘录 (Cheatsheets)</h1>
+          <div className="search-bar" style={{ margin: 0, maxWidth: '300px', position: 'relative' }}>
+            <Search size={16} style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', color: '#64748b' }} />
+            <input 
+              type="text" 
+              placeholder="搜索命令或描述..." 
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              style={{ paddingLeft: '2.5rem' }}
+            />
+          </div>
         </div>
         
-        <div className="result-box" style={{ marginTop: '1.5rem', minHeight: '400px', fontSize: '0.95rem' }}>
-          {CHEATSHEETS[activeTab].trim()}
+        <div className="button-group" style={{ margin: 0, overflowX: 'auto', flexWrap: 'nowrap', paddingBottom: '0.5rem' }}>
+          {CHEATSHEETS_DATA.map(sheet => (
+            <button 
+              key={sheet.id} 
+              className={`btn ${activeTab === sheet.id ? '' : 'btn-secondary'}`} 
+              onClick={() => {
+                setActiveTab(sheet.id);
+                setSearchQuery('');
+              }}
+              style={{ flexShrink: 0 }}
+            >
+              <Terminal size={16} />
+              {sheet.name}
+            </button>
+          ))}
         </div>
+      </div>
+
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+        {filteredCategories.length === 0 ? (
+          <div style={{ textAlign: 'center', padding: '4rem', color: '#64748b', background: 'var(--glass-bg)', borderRadius: '16px' }}>
+            没有找到相关的命令
+          </div>
+        ) : (
+          filteredCategories.map((category, idx) => (
+            <div key={idx} className="tool-card" style={{ padding: '0', overflow: 'hidden' }}>
+              <div style={{ padding: '1rem 1.5rem', background: 'rgba(0,0,0,0.2)', borderBottom: '1px solid var(--glass-border)' }}>
+                <h2 style={{ fontSize: '1.125rem', color: 'var(--primary-color)', margin: 0 }}>{category.title}</h2>
+              </div>
+              
+              <div style={{ display: 'flex', flexDirection: 'column' }}>
+                {category.items.map((item, itemIdx) => (
+                  <div 
+                    key={itemIdx} 
+                    style={{ 
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      padding: '1rem 1.5rem', 
+                      borderBottom: itemIdx === category.items.length - 1 ? 'none' : '1px solid rgba(255,255,255,0.05)',
+                      gap: '1rem',
+                      transition: 'background 0.2s'
+                    }}
+                    onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.02)'}
+                    onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+                  >
+                    <div style={{ flex: '0 0 300px', display: 'flex', alignItems: 'center' }}>
+                      <code style={{ 
+                        color: '#38bdf8', 
+                        background: 'rgba(56,189,248,0.1)', 
+                        padding: '0.25rem 0.5rem', 
+                        borderRadius: '4px',
+                        fontFamily: 'Fira Code, monospace',
+                        fontSize: '0.875rem',
+                        wordBreak: 'break-all'
+                      }}>
+                        {item.cmd}
+                      </code>
+                      <button 
+                        onClick={() => handleCopy(item.cmd)}
+                        style={{ 
+                          background: 'none', 
+                          border: 'none', 
+                          color: copiedCmd === item.cmd ? '#22c55e' : '#64748b', 
+                          cursor: 'pointer',
+                          marginLeft: '0.5rem',
+                          padding: '0.25rem'
+                        }}
+                        title="复制命令"
+                      >
+                        {copiedCmd === item.cmd ? <Check size={16} /> : <Copy size={16} />}
+                      </button>
+                    </div>
+                    <div style={{ flex: 1, color: '#cbd5e1', fontSize: '0.9rem' }}>
+                      {item.desc}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))
+        )}
       </div>
     </div>
   );
