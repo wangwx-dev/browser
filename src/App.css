@@ -114,6 +114,15 @@
   box-shadow: var(--glass-shadow);
 }
 
+.spin {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
 .header h1 {
   font-size: 1.5rem;
   font-weight: 700;
