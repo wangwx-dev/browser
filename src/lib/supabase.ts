@@ -1,34 +1,26 @@
-import { createClient } from '@supabase/supabase-js';
+import { createClient, SupabaseClient } from '@supabase/supabase-js';
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://placeholder.supabase.co';
+const rawUrl = import.meta.env.VITE_SUPABASE_URL || 'https://placeholder.supabase.co';
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'placeholder_key';
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+// Fix malformed URL issue gracefully without crashing the app
+let validUrl = rawUrl;
+if (rawUrl.includes('[') || rawUrl.includes(']')) {
+  // Fallback to a valid placeholder so the app doesn't crash on load
+  validUrl = 'https://placeholder.supabase.co';
+}
 
-// Types for our database
-export interface Database {
-  public: {
-    Tables: {
-      user_nav_configs: {
-        Row: {
-          id: string;
-          user_id: string;
-          nav_data: any; // We will store the JSON array here
-          updated_at: string;
-        };
-        Insert: {
-          id?: string;
-          user_id: string;
-          nav_data: any;
-          updated_at?: string;
-        };
-        Update: {
-          id?: string;
-          user_id?: string;
-          nav_data?: any;
-          updated_at?: string;
-        };
-      };
-    };
-  };
+export let supabase: SupabaseClient;
+export let isSupabaseConfigured = false;
+
+try {
+  supabase = createClient(validUrl, supabaseAnonKey);
+  // Basic check if it's not the placeholder
+  if (validUrl !== 'https://placeholder.supabase.co' && !validUrl.includes('YOUR_PROJECT_ID')) {
+    isSupabaseConfigured = true;
+  }
+} catch (e) {
+  console.error("Supabase init error:", e);
+  // Initialize with a dummy so the app doesn't crash on import
+  supabase = createClient('https://placeholder.supabase.co', 'placeholder_key');
 }
