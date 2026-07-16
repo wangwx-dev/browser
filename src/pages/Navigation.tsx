@@ -6,10 +6,44 @@ import type { LinkItem } from '../components/LinkCard';
 import { AddLinkModal } from '../components/AddLinkModal';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
-import { Edit2, Plus, Trash2, LogOut, Cloud, RefreshCw, User as UserIcon, GripHorizontal } from 'lucide-react';
-import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
-import type { DropResult } from '@hello-pangea/dnd';
+import { Edit2, Plus, Trash2, LogOut, Cloud, RefreshCw, User as UserIcon } from 'lucide-react';
 import initialData from '../data.json';
+import { SortableLinkCard } from '../components/SortableLinkCard';
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragOverlay,
+  defaultDropAnimationSideEffects,
+} from '@dnd-kit/core';
+import type {
+  DragEndEvent,
+  DragOverEvent,
+  DragStartEvent,
+} from '@dnd-kit/core';
+import {
+  SortableContext,
+  sortableKeyboardCoordinates,
+  rectSortingStrategy,
+  arrayMove,
+} from '@dnd-kit/sortable';
+import { useDroppable } from '@dnd-kit/core';
+
+// A wrapper for the droppable category area
+const CategoryDroppable: React.FC<{ category: string; children: React.ReactNode; isEditing: boolean }> = ({ category, children, isEditing }) => {
+  const { setNodeRef } = useDroppable({
+    id: category,
+    disabled: !isEditing
+  });
+  return (
+    <div ref={setNodeRef} className="links-grid" style={{ minHeight: isEditing ? '120px' : 'auto' }}>
+      {children}
+    </div>
+  );
+};
 
 export default function Navigation() {
   const { user, loading: authLoading, signOut } = useAuth();
@@ -21,12 +55,11 @@ export default function Navigation() {
   
   const [syncStatus, setSyncStatus] = useState<'idle' | 'syncing' | 'success' | 'error'>('idle');
   const [dataLoaded, setDataLoaded] = useState(false);
+  
+  const [activeDragId, setActiveDragId] = useState<string | null>(null);
 
-  // Fetch data from Supabase once authenticated
   useEffect(() => {
-    if (user) {
-      loadUserData();
-    }
+    if (user) loadUserData();
   }, [user]);
 
   const loadUserData = async () => {
@@ -39,14 +72,11 @@ export default function Navigation() {
         .eq('user_id', user.id)
         .single();
         
-      if (error && error.code !== 'PGRST116') {
-        throw error; // Ignore "Row not found" error
-      }
+      if (error && error.code !== 'PGRST116') throw error;
       
       if (data && data.nav_data) {
         setNavData(data.nav_data);
       } else {
-        // First time user, use initial data
         setNavData(initialData);
         await saveUserData(initialData);
       }
@@ -81,12 +111,10 @@ export default function Navigation() {
 
   const filteredData = useMemo(() => {
     if (!searchQuery.trim()) return navData;
-    
     const query = searchQuery.toLowerCase();
     return navData.map(category => {
       const filteredLinks = category.links.filter((link: any) => 
-        link.name.toLowerCase().includes(query) || 
-        link.desc.toLowerCase().includes(query)
+        link.name.toLowerCase().includes(query) || link.desc.toLowerCase().includes(query)
       );
       return { ...category, links: filteredLinks };
     }).filter(category => category.links.length > 0 || category.category.toLowerCase().includes(query));
@@ -95,7 +123,6 @@ export default function Navigation() {
   if (authLoading) return <div className="page-container" style={{ textAlign: 'center', marginTop: '5rem' }}>Loading...</div>;
   if (!user) return <Navigate to="/login" replace />;
 
-  // Handlers for Edit Mode
   const handleDeleteLink = (catIdx: number, linkIdx: number) => {
     if (!window.confirm('确定要删除这个网站吗？')) return;
     const newData = [...navData];
@@ -126,37 +153,90 @@ export default function Navigation() {
     setActiveCategoryForNewLink(null);
   };
 
-  const onDragEnd = (result: DropResult) => {
-    const { source, destination } = result;
+  // --- Dnd-kit logic ---
+  const isDragEnabled = isEditing && !searchQuery.trim();
 
-    if (!destination) return;
-    if (source.droppableId === destination.droppableId && source.index === destination.index) return;
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
+  );
 
-    const sourceCatIdx = parseInt(source.droppableId);
-    const destCatIdx = parseInt(destination.droppableId);
-
-    const newData = [...navData];
-    
-    // Create new arrays to avoid direct mutation of the state reference
-    const sourceLinks = [...newData[sourceCatIdx].links];
-    const destLinks = sourceCatIdx === destCatIdx ? sourceLinks : [...newData[destCatIdx].links];
-
-    // Remove from source
-    const [movedLink] = sourceLinks.splice(source.index, 1);
-    
-    // Add to destination
-    destLinks.splice(destination.index, 0, movedLink);
-
-    // Re-assign to newData
-    newData[sourceCatIdx].links = sourceLinks;
-    if (sourceCatIdx !== destCatIdx) {
-      newData[destCatIdx].links = destLinks;
+  const findContainer = (id: string) => {
+    if (navData.some(c => c.category === id)) return id;
+    for (const cat of navData) {
+      if (cat.links.some((l: any) => l.url === id)) return cat.category;
     }
-
-    saveUserData(newData);
+    return null;
   };
 
-  const isDragEnabled = isEditing && !searchQuery.trim();
+  const handleDragStart = (event: DragStartEvent) => {
+    setActiveDragId(event.active.id as string);
+  };
+
+  const handleDragOver = (event: DragOverEvent) => {
+    const { active, over } = event;
+    const overId = over?.id;
+    if (!overId || active.id === overId) return;
+
+    const activeContainer = findContainer(active.id as string);
+    const overContainer = findContainer(overId as string);
+
+    if (!activeContainer || !overContainer || activeContainer === overContainer) return;
+
+    setNavData((prev) => {
+      const activeCatIdx = prev.findIndex(c => c.category === activeContainer);
+      const overCatIdx = prev.findIndex(c => c.category === overContainer);
+      
+      const activeItems = prev[activeCatIdx].links;
+      const overItems = prev[overCatIdx].links;
+      
+      const activeIndex = activeItems.findIndex((l: any) => l.url === active.id);
+      let overIndex = overItems.findIndex((l: any) => l.url === overId);
+      
+      if (overIndex === -1) overIndex = overItems.length;
+
+      const newData = [...prev];
+      newData[activeCatIdx] = { ...prev[activeCatIdx], links: [...activeItems] };
+      newData[overCatIdx] = { ...prev[overCatIdx], links: [...overItems] };
+
+      const [moved] = newData[activeCatIdx].links.splice(activeIndex, 1);
+      newData[overCatIdx].links.splice(overIndex, 0, moved);
+
+      return newData;
+    });
+  };
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    setActiveDragId(null);
+    const { active, over } = event;
+    if (!over) {
+      saveUserData(navData);
+      return;
+    }
+
+    const activeContainer = findContainer(active.id as string);
+    const overContainer = findContainer(over.id as string);
+
+    if (activeContainer && overContainer && activeContainer === overContainer) {
+      const catIdx = navData.findIndex(c => c.category === activeContainer);
+      const activeIndex = navData[catIdx].links.findIndex((l: any) => l.url === active.id);
+      const overIndex = navData[catIdx].links.findIndex((l: any) => l.url === over.id);
+
+      if (activeIndex !== overIndex) {
+        const newData = [...navData];
+        newData[catIdx].links = arrayMove(newData[catIdx].links, activeIndex, overIndex);
+        setNavData(newData);
+        saveUserData(newData);
+        return;
+      }
+    }
+    
+    saveUserData(navData);
+  };
+
+  const activeLink = activeDragId 
+    ? navData.flatMap(c => c.links).find((l: any) => l.url === activeDragId) 
+    : null;
 
   return (
     <div className="page-container">
@@ -178,20 +258,12 @@ export default function Navigation() {
         </div>
 
         <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-          <button 
-            className={`btn ${isEditing ? '' : 'btn-secondary'}`} 
-            onClick={() => setIsEditing(!isEditing)}
-            title="进入编辑模式"
-          >
-            <Edit2 size={16} />
-            {isEditing ? '完成' : '编辑'}
+          <button className={`btn ${isEditing ? '' : 'btn-secondary'}`} onClick={() => setIsEditing(!isEditing)} title="进入编辑模式">
+            <Edit2 size={16} /> {isEditing ? '完成' : '编辑'}
           </button>
-          
           <div style={{ width: '1px', height: '24px', background: 'var(--glass-border)', margin: '0 0.5rem' }}></div>
-
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#94a3b8', fontSize: '0.875rem' }}>
-            <UserIcon size={16} />
-            <span>{user.email?.split('@')[0]}</span>
+            <UserIcon size={16} /> <span>{user.email?.split('@')[0]}</span>
           </div>
           <button className="btn btn-secondary" onClick={signOut} title="退出登录" style={{ padding: '0.5rem' }}>
             <LogOut size={16} />
@@ -199,19 +271,25 @@ export default function Navigation() {
         </div>
       </header>
 
-      <DragDropContext onDragEnd={onDragEnd}>
-        <main style={{ minHeight: '50vh' }}>
-          {!dataLoaded ? (
-            <div style={{ textAlign: 'center', marginTop: '3rem', color: '#94a3b8' }}>
-              <RefreshCw size={24} className="spin" style={{ margin: '0 auto 1rem' }} />
-              <p>正在加载您的专属导航...</p>
-            </div>
-          ) : filteredData.length === 0 ? (
-            <div style={{ textAlign: 'center', marginTop: '3rem', color: '#94a3b8' }}>
-              <p>没有找到相关内容</p>
-            </div>
-          ) : (
-            filteredData.map((category, catIdx) => (
+      <main style={{ minHeight: '50vh' }}>
+        {!dataLoaded ? (
+          <div style={{ textAlign: 'center', marginTop: '3rem', color: '#94a3b8' }}>
+            <RefreshCw size={24} className="spin" style={{ margin: '0 auto 1rem' }} />
+            <p>正在加载您的专属导航...</p>
+          </div>
+        ) : filteredData.length === 0 ? (
+          <div style={{ textAlign: 'center', marginTop: '3rem', color: '#94a3b8' }}>
+            <p>没有找到相关内容</p>
+          </div>
+        ) : (
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            onDragStart={handleDragStart}
+            onDragOver={handleDragOver}
+            onDragEnd={handleDragEnd}
+          >
+            {filteredData.map((category, catIdx) => (
               <section key={category.category} className="category-section">
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
                   <h2 className="category-title" style={{ marginBottom: 0 }}>{category.category}</h2>
@@ -222,92 +300,57 @@ export default function Navigation() {
                   )}
                 </div>
                 
-                <Droppable droppableId={String(catIdx)} direction="horizontal" isDropDisabled={!isDragEnabled}>
-                  {(provided) => (
-                    <div 
-                      className="links-grid"
-                      ref={provided.innerRef}
-                      {...provided.droppableProps}
-                      style={{ minHeight: isEditing ? '120px' : 'auto' }}
-                    >
-                      {category.links.map((link: any, linkIdx: number) => (
-                        <Draggable 
-                          key={`${link.url}-${linkIdx}`} 
-                          draggableId={`${link.url}-${linkIdx}`} 
-                          index={linkIdx}
-                          isDragDisabled={!isDragEnabled}
-                        >
-                          {(provided, snapshot) => (
-                            <div
-                              ref={provided.innerRef}
-                              {...provided.draggableProps}
-                              style={{
-                                ...provided.draggableProps.style,
-                                position: 'relative',
-                                opacity: snapshot.isDragging ? 0.8 : 1,
-                                transform: snapshot.isDragging ? `${provided.draggableProps.style?.transform} scale(1.02)` : provided.draggableProps.style?.transform,
-                                transition: snapshot.isDragging ? 'none' : 'transform 0.1s',
-                                zIndex: snapshot.isDragging ? 999 : 'auto'
-                              }}
-                            >
-                              {isEditing && (
-                                <div 
-                                  {...provided.dragHandleProps} 
-                                  style={{
-                                    position: 'absolute', top: '-10px', left: '10px', width: '30px', height: '30px',
-                                    borderRadius: '50%', background: 'var(--glass-bg)', color: '#94a3b8',
-                                    border: '1px solid var(--glass-border)', display: 'flex', alignItems: 'center',
-                                    justifyContent: 'center', cursor: 'grab', zIndex: 11,
-                                    boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
-                                  }}
-                                  title="拖动调整位置"
-                                >
-                                  <GripHorizontal size={16} />
-                                </div>
-                              )}
-                              <LinkCard 
-                                link={link} 
-                                isEditing={isEditing} 
-                                onDelete={() => handleDeleteLink(catIdx, linkIdx)} 
-                              />
-                            </div>
-                          )}
-                        </Draggable>
-                      ))}
-                      {provided.placeholder}
-                      
-                      {isEditing && (
-                        <button 
-                          onClick={() => setActiveCategoryForNewLink(catIdx)}
-                          style={{
-                            background: 'rgba(255,255,255,0.02)', border: '2px dashed var(--glass-border)',
-                            borderRadius: '12px', padding: '1.25rem', display: 'flex', flexDirection: 'column',
-                            alignItems: 'center', justifyContent: 'center', color: '#94a3b8', cursor: 'pointer',
-                            minHeight: '100px', transition: 'all 0.2s'
-                          }}
-                          onMouseEnter={(e) => e.currentTarget.style.borderColor = 'var(--primary-color)'}
-                          onMouseLeave={(e) => e.currentTarget.style.borderColor = 'var(--glass-border)'}
-                        >
-                          <Plus size={24} style={{ marginBottom: '0.5rem' }} />
-                          <span>添加网站</span>
-                        </button>
-                      )}
-                    </div>
-                  )}
-                </Droppable>
+                <SortableContext 
+                  items={category.links.map((l: any) => l.url)} 
+                  strategy={rectSortingStrategy}
+                >
+                  <CategoryDroppable category={category.category} isEditing={isDragEnabled}>
+                    {category.links.map((link: any, linkIdx: number) => (
+                      <SortableLinkCard 
+                        key={link.url}
+                        id={link.url}
+                        link={link}
+                        isEditing={isEditing}
+                        onDelete={() => handleDeleteLink(catIdx, linkIdx)}
+                      />
+                    ))}
+                    {isEditing && (
+                      <button 
+                        onClick={() => setActiveCategoryForNewLink(catIdx)}
+                        style={{
+                          background: 'rgba(255,255,255,0.02)', border: '2px dashed var(--glass-border)',
+                          borderRadius: '12px', padding: '1.25rem', display: 'flex', flexDirection: 'column',
+                          alignItems: 'center', justifyContent: 'center', color: '#94a3b8', cursor: 'pointer',
+                          minHeight: '100px', transition: 'all 0.2s'
+                        }}
+                      >
+                        <Plus size={24} style={{ marginBottom: '0.5rem' }} />
+                        <span>添加网站</span>
+                      </button>
+                    )}
+                  </CategoryDroppable>
+                </SortableContext>
               </section>
-            ))
-          )}
+            ))}
 
-          {isEditing && dataLoaded && (
-            <div style={{ textAlign: 'center', marginTop: '3rem' }}>
-              <button className="btn btn-secondary" onClick={handleAddCategory}>
-                <Plus size={16} /> 新增分类
-              </button>
-            </div>
-          )}
-        </main>
-      </DragDropContext>
+            <DragOverlay dropAnimation={{ sideEffects: defaultDropAnimationSideEffects({ styles: { active: { opacity: '0.4' } } }) }}>
+              {activeDragId && activeLink ? (
+                <div style={{ transform: 'scale(1.05)' }}>
+                  <LinkCard link={activeLink} isEditing={true} />
+                </div>
+              ) : null}
+            </DragOverlay>
+          </DndContext>
+        )}
+
+        {isEditing && dataLoaded && (
+          <div style={{ textAlign: 'center', marginTop: '3rem' }}>
+            <button className="btn btn-secondary" onClick={handleAddCategory}>
+              <Plus size={16} /> 新增分类
+            </button>
+          </div>
+        )}
+      </main>
 
       <AddLinkModal
         isOpen={activeCategoryForNewLink !== null}
