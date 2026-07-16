@@ -6,12 +6,32 @@ export const onRequest = async (context: any) => {
   const targetPath = url.pathname.replace(/^\/api\/supabase/, '');
   const targetUrl = `https://${targetHost}${targetPath}${url.search}`;
 
-  // Clone the request to modify headers
-  const request = new Request(targetUrl, context.request);
-  request.headers.set('Host', targetHost);
+  // Copy headers
+  const newHeaders = new Headers(context.request.headers);
+  newHeaders.delete('Host'); // Let the browser/fetch automatically set the correct Host
+  newHeaders.delete('Origin'); // Remove Origin to avoid CORS issues at Supabase edge if they validate it
+  newHeaders.delete('Referer');
+
+  const init: RequestInit = {
+    method: context.request.method,
+    headers: newHeaders,
+    redirect: 'manual'
+  };
+
+  if (context.request.method !== 'GET' && context.request.method !== 'HEAD') {
+    init.body = context.request.body;
+  }
+
+  const request = new Request(targetUrl, init);
   
-  // We don't need to manually handle CORS because this function is hosted on the same domain as the frontend
-  const response = await fetch(request);
-  
-  return response;
+  try {
+    const response = await fetch(request);
+    
+    // Create a new response to allow us to modify headers (like CORS if needed, though same-origin shouldn't need it)
+    const newResponse = new Response(response.body, response);
+    return newResponse;
+  } catch (err) {
+    console.error("Proxy error:", err);
+    return new Response("Proxy Error", { status: 502 });
+  }
 };
