@@ -77,9 +77,6 @@ export default function Navigation() {
     }
   };
 
-  if (authLoading) return <div className="page-container" style={{ textAlign: 'center', marginTop: '5rem' }}>Loading...</div>;
-  if (!user) return <Navigate to="/login" replace />;
-
   const filteredData = useMemo(() => {
     if (!searchQuery.trim()) return navData;
     
@@ -92,6 +89,9 @@ export default function Navigation() {
       return { ...category, links: filteredLinks };
     }).filter(category => category.links.length > 0 || category.category.toLowerCase().includes(query));
   }, [searchQuery, navData]);
+
+  if (authLoading) return <div className="page-container" style={{ textAlign: 'center', marginTop: '5rem' }}>Loading...</div>;
+  if (!user) return <Navigate to="/login" replace />;
 
   // Handlers for Edit Mode
   const handleDeleteLink = (catIdx: number, linkIdx: number) => {
