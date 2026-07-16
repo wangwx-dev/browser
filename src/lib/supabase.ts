@@ -3,12 +3,8 @@ import { createClient, SupabaseClient } from '@supabase/supabase-js';
 // Use the exact credentials provided by the user
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || import.meta.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || 'sb_publishable_dhwYO-iAk7RyRe7J-0BEFg_uiGJOMHy';
 
-const isLocal = typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
-
-// 本地开发直连，线上部署走同源反向代理绕过墙
-let validUrl = isLocal 
-  ? 'https://getofgqtvxcqhaprsrze.supabase.co'
-  : (typeof window !== 'undefined' ? `${window.location.origin}/api/supabase` : 'https://getofgqtvxcqhaprsrze.supabase.co');
+// 直接连接 Supabase (如果在国内可能会被墙，需要代理)
+let validUrl = 'https://getofgqtvxcqhaprsrze.supabase.co';
 
 export let supabase: SupabaseClient;
 export let isSupabaseConfigured = false;
