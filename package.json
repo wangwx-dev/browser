@@ -25,6 +25,7 @@
     "lucide-react": "^1.24.0",
     "marked": "^18.0.6",
     "node-forge": "^1.4.0",
+    "puppeteer-core": "^25.3.0",
     "qrcode.react": "^4.2.0",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
