@@ -6,7 +6,9 @@ import type { LinkItem } from '../components/LinkCard';
 import { AddLinkModal } from '../components/AddLinkModal';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
-import { Edit2, Plus, Trash2, LogOut, Cloud, RefreshCw, User as UserIcon } from 'lucide-react';
+import { Edit2, Plus, Trash2, LogOut, Cloud, RefreshCw, User as UserIcon, GripHorizontal } from 'lucide-react';
+import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
+import type { DropResult } from '@hello-pangea/dnd';
 import initialData from '../data.json';
 
 export default function Navigation() {
@@ -124,6 +126,38 @@ export default function Navigation() {
     setActiveCategoryForNewLink(null);
   };
 
+  const onDragEnd = (result: DropResult) => {
+    const { source, destination } = result;
+
+    if (!destination) return;
+    if (source.droppableId === destination.droppableId && source.index === destination.index) return;
+
+    const sourceCatIdx = parseInt(source.droppableId);
+    const destCatIdx = parseInt(destination.droppableId);
+
+    const newData = [...navData];
+    
+    // Create new arrays to avoid direct mutation of the state reference
+    const sourceLinks = [...newData[sourceCatIdx].links];
+    const destLinks = sourceCatIdx === destCatIdx ? sourceLinks : [...newData[destCatIdx].links];
+
+    // Remove from source
+    const [movedLink] = sourceLinks.splice(source.index, 1);
+    
+    // Add to destination
+    destLinks.splice(destination.index, 0, movedLink);
+
+    // Re-assign to newData
+    newData[sourceCatIdx].links = sourceLinks;
+    if (sourceCatIdx !== destCatIdx) {
+      newData[destCatIdx].links = destLinks;
+    }
+
+    saveUserData(newData);
+  };
+
+  const isDragEnabled = isEditing && !searchQuery.trim();
+
   return (
     <div className="page-container">
       <header className="header" style={{ flexWrap: 'wrap', gap: '1rem' }}>
@@ -165,67 +199,115 @@ export default function Navigation() {
         </div>
       </header>
 
-      <main style={{ minHeight: '50vh' }}>
-        {!dataLoaded ? (
-          <div style={{ textAlign: 'center', marginTop: '3rem', color: '#94a3b8' }}>
-            <RefreshCw size={24} className="spin" style={{ margin: '0 auto 1rem' }} />
-            <p>正在加载您的专属导航...</p>
-          </div>
-        ) : filteredData.length === 0 ? (
-          <div style={{ textAlign: 'center', marginTop: '3rem', color: '#94a3b8' }}>
-            <p>没有找到相关内容</p>
-          </div>
-        ) : (
-          filteredData.map((category, catIdx) => (
-            <section key={catIdx} className="category-section">
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
-                <h2 className="category-title" style={{ marginBottom: 0 }}>{category.category}</h2>
-                {isEditing && (
-                  <button onClick={() => handleDeleteCategory(catIdx)} style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', padding: '0.5rem' }}>
-                    <Trash2 size={16} />
-                  </button>
-                )}
-              </div>
-              
-              <div className="links-grid">
-                {category.links.map((link: any, linkIdx: number) => (
-                  <LinkCard 
-                    key={linkIdx} 
-                    link={link} 
-                    isEditing={isEditing} 
-                    onDelete={() => handleDeleteLink(catIdx, linkIdx)} 
-                  />
-                ))}
+      <DragDropContext onDragEnd={onDragEnd}>
+        <main style={{ minHeight: '50vh' }}>
+          {!dataLoaded ? (
+            <div style={{ textAlign: 'center', marginTop: '3rem', color: '#94a3b8' }}>
+              <RefreshCw size={24} className="spin" style={{ margin: '0 auto 1rem' }} />
+              <p>正在加载您的专属导航...</p>
+            </div>
+          ) : filteredData.length === 0 ? (
+            <div style={{ textAlign: 'center', marginTop: '3rem', color: '#94a3b8' }}>
+              <p>没有找到相关内容</p>
+            </div>
+          ) : (
+            filteredData.map((category, catIdx) => (
+              <section key={category.category} className="category-section">
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
+                  <h2 className="category-title" style={{ marginBottom: 0 }}>{category.category}</h2>
+                  {isEditing && (
+                    <button onClick={() => handleDeleteCategory(catIdx)} style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', padding: '0.5rem' }}>
+                      <Trash2 size={16} />
+                    </button>
+                  )}
+                </div>
                 
-                {isEditing && (
-                  <button 
-                    onClick={() => setActiveCategoryForNewLink(catIdx)}
-                    style={{
-                      background: 'rgba(255,255,255,0.02)', border: '2px dashed var(--glass-border)',
-                      borderRadius: '12px', padding: '1.25rem', display: 'flex', flexDirection: 'column',
-                      alignItems: 'center', justifyContent: 'center', color: '#94a3b8', cursor: 'pointer',
-                      minHeight: '100px', transition: 'all 0.2s'
-                    }}
-                    onMouseEnter={(e) => e.currentTarget.style.borderColor = 'var(--primary-color)'}
-                    onMouseLeave={(e) => e.currentTarget.style.borderColor = 'var(--glass-border)'}
-                  >
-                    <Plus size={24} style={{ marginBottom: '0.5rem' }} />
-                    <span>添加网站</span>
-                  </button>
-                )}
-              </div>
-            </section>
-          ))
-        )}
+                <Droppable droppableId={String(catIdx)} direction="horizontal" isDropDisabled={!isDragEnabled}>
+                  {(provided) => (
+                    <div 
+                      className="links-grid"
+                      ref={provided.innerRef}
+                      {...provided.droppableProps}
+                      style={{ minHeight: isEditing ? '120px' : 'auto' }}
+                    >
+                      {category.links.map((link: any, linkIdx: number) => (
+                        <Draggable 
+                          key={`${link.url}-${linkIdx}`} 
+                          draggableId={`${link.url}-${linkIdx}`} 
+                          index={linkIdx}
+                          isDragDisabled={!isDragEnabled}
+                        >
+                          {(provided, snapshot) => (
+                            <div
+                              ref={provided.innerRef}
+                              {...provided.draggableProps}
+                              style={{
+                                ...provided.draggableProps.style,
+                                position: 'relative',
+                                opacity: snapshot.isDragging ? 0.8 : 1,
+                                transform: snapshot.isDragging ? `${provided.draggableProps.style?.transform} scale(1.02)` : provided.draggableProps.style?.transform,
+                                transition: snapshot.isDragging ? 'none' : 'transform 0.1s',
+                                zIndex: snapshot.isDragging ? 999 : 'auto'
+                              }}
+                            >
+                              {isEditing && (
+                                <div 
+                                  {...provided.dragHandleProps} 
+                                  style={{
+                                    position: 'absolute', top: '-10px', left: '10px', width: '30px', height: '30px',
+                                    borderRadius: '50%', background: 'var(--glass-bg)', color: '#94a3b8',
+                                    border: '1px solid var(--glass-border)', display: 'flex', alignItems: 'center',
+                                    justifyContent: 'center', cursor: 'grab', zIndex: 11,
+                                    boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
+                                  }}
+                                  title="拖动调整位置"
+                                >
+                                  <GripHorizontal size={16} />
+                                </div>
+                              )}
+                              <LinkCard 
+                                link={link} 
+                                isEditing={isEditing} 
+                                onDelete={() => handleDeleteLink(catIdx, linkIdx)} 
+                              />
+                            </div>
+                          )}
+                        </Draggable>
+                      ))}
+                      {provided.placeholder}
+                      
+                      {isEditing && (
+                        <button 
+                          onClick={() => setActiveCategoryForNewLink(catIdx)}
+                          style={{
+                            background: 'rgba(255,255,255,0.02)', border: '2px dashed var(--glass-border)',
+                            borderRadius: '12px', padding: '1.25rem', display: 'flex', flexDirection: 'column',
+                            alignItems: 'center', justifyContent: 'center', color: '#94a3b8', cursor: 'pointer',
+                            minHeight: '100px', transition: 'all 0.2s'
+                          }}
+                          onMouseEnter={(e) => e.currentTarget.style.borderColor = 'var(--primary-color)'}
+                          onMouseLeave={(e) => e.currentTarget.style.borderColor = 'var(--glass-border)'}
+                        >
+                          <Plus size={24} style={{ marginBottom: '0.5rem' }} />
+                          <span>添加网站</span>
+                        </button>
+                      )}
+                    </div>
+                  )}
+                </Droppable>
+              </section>
+            ))
+          )}
 
-        {isEditing && dataLoaded && (
-          <div style={{ textAlign: 'center', marginTop: '3rem' }}>
-            <button className="btn btn-secondary" onClick={handleAddCategory}>
-              <Plus size={16} /> 新增分类
-            </button>
-          </div>
-        )}
-      </main>
+          {isEditing && dataLoaded && (
+            <div style={{ textAlign: 'center', marginTop: '3rem' }}>
+              <button className="btn btn-secondary" onClick={handleAddCategory}>
+                <Plus size={16} /> 新增分类
+              </button>
+            </div>
+          )}
+        </main>
+      </DragDropContext>
 
       <AddLinkModal
         isOpen={activeCategoryForNewLink !== null}
