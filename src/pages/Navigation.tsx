@@ -58,6 +58,12 @@ export default function Navigation() {
   
   const [activeDragId, setActiveDragId] = useState<string | null>(null);
 
+  // --- Dnd-kit logic hooks MUST be before early returns ---
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
+  );
+
   useEffect(() => {
     if (user) loadUserData();
   }, [user]);
@@ -155,11 +161,6 @@ export default function Navigation() {
 
   // --- Dnd-kit logic ---
   const isDragEnabled = isEditing && !searchQuery.trim();
-
-  const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
-    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
-  );
 
   const findContainer = (id: string) => {
     if (navData.some(c => c.category === id)) return id;
