@@ -1,58 +1,66 @@
-import { useState } from 'react';
-import { DiffEditor } from '@monaco-editor/react';
+import { diffLines } from 'diff'
+import { useMemo, useState } from 'react'
+
+import './DiffViewer.css'
 
 export default function DiffViewer() {
-  const [original, setOriginal] = useState('这是原始文本。\n修改或者删除这些内容来查看高亮变化。');
-  const [modified, setModified] = useState('这是修改后的文本。\n修改或者删除这些内容来查看高亮变化。\n新增加的一行！');
+  const [original, setOriginal] = useState('这是原始文本。\n修改或者删除这些内容来查看高亮变化。')
+  const [modified, setModified] = useState('这是修改后的文本。\n修改或者删除这些内容来查看高亮变化。\n新增加的一行！')
+  const changes = useMemo(() => diffLines(original, modified), [modified, original])
 
   return (
-    <div className="page-container" style={{ maxWidth: '100%' }}>
+    <div className="page-container diff-page">
       <div className="header">
         <h1>文本 / 代码 Diff 对比</h1>
+        <p>逐行对比完全在浏览器本地完成，不会上传输入内容。</p>
       </div>
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', height: 'calc(100vh - 160px)' }}>
-        <div style={{ display: 'flex', gap: '1rem' }}>
-          <div style={{ flex: 1 }}>
-            <label style={{ fontSize: '0.875rem', color: '#94a3b8', marginBottom: '0.5rem', display: 'block' }}>原始文本 (Original)</label>
-            <textarea 
-              className="form-control" 
-              style={{ height: '100px' }}
-              value={original}
-              onChange={(e) => setOriginal(e.target.value)}
-            />
-          </div>
-          <div style={{ flex: 1 }}>
-            <label style={{ fontSize: '0.875rem', color: '#94a3b8', marginBottom: '0.5rem', display: 'block' }}>修改文本 (Modified)</label>
-            <textarea 
-              className="form-control" 
-              style={{ height: '100px' }}
-              value={modified}
-              onChange={(e) => setModified(e.target.value)}
-            />
-          </div>
-        </div>
-
-        <div style={{ flex: 1, background: 'var(--glass-bg)', borderRadius: '16px', overflow: 'hidden', border: '1px solid var(--glass-border)' }}>
-          <div style={{ padding: '0.75rem 1rem', borderBottom: '1px solid var(--glass-border)', background: 'rgba(0,0,0,0.2)' }}>
-            <h3 style={{ margin: 0, fontSize: '0.875rem' }}>专业对比视图 (Monaco Diff Editor)</h3>
-          </div>
-          <div style={{ height: 'calc(100% - 45px)' }}>
-            <DiffEditor
-              height="100%"
-              theme="vs-dark"
-              original={original}
-              modified={modified}
-              options={{
-                renderSideBySide: true,
-                minimap: { enabled: false },
-                fontSize: 14,
-                readOnly: true
-              }}
-            />
-          </div>
-        </div>
+      <div className="diff-input-grid">
+        <label className="diff-field">
+          <span>原始文本</span>
+          <textarea
+            className="form-control diff-input"
+            value={original}
+            onChange={(event) => setOriginal(event.target.value)}
+            spellCheck={false}
+          />
+        </label>
+        <label className="diff-field">
+          <span>修改文本</span>
+          <textarea
+            className="form-control diff-input"
+            value={modified}
+            onChange={(event) => setModified(event.target.value)}
+            spellCheck={false}
+          />
+        </label>
       </div>
+
+      <section className="diff-result" aria-labelledby="diff-result-title">
+        <div className="diff-result-header">
+          <h2 id="diff-result-title">行级差异</h2>
+          <span><b className="diff-legend-added">+</b> 新增　<b className="diff-legend-removed">−</b> 删除</span>
+        </div>
+        <pre className="diff-code" tabIndex={0} aria-label="行级差异结果">
+          <code>
+            {changes.map((change, changeIndex) => {
+              const kind = change.added ? 'added' : change.removed ? 'removed' : 'same'
+              const marker = change.added ? '+' : change.removed ? '−' : ' '
+              const lines = change.value.split('\n')
+
+              return lines.map((line, lineIndex) => {
+                if (lineIndex === lines.length - 1 && line === '') return null
+                return (
+                  <span className={`diff-line diff-line-${kind}`} key={`${changeIndex}-${lineIndex}`}>
+                    <span className="diff-marker" aria-hidden="true">{marker}</span>
+                    {line || ' '}{'\n'}
+                  </span>
+                )
+              })
+            })}
+          </code>
+        </pre>
+      </section>
     </div>
-  );
+  )
 }

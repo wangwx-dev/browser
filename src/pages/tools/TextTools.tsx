@@ -50,7 +50,7 @@ export default function TextTools() {
       <div style={{ display: 'flex', gap: '2rem', flexWrap: 'wrap' }}>
         
         {/* Main Editor */}
-        <div style={{ flex: '2', minWidth: '400px', display: 'flex', flexDirection: 'column' }}>
+        <div style={{ flex: '2 1 22rem', minWidth: 0, display: 'flex', flexDirection: 'column' }}>
           <div className="tool-card" style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
             <div className="tool-header">
               <h2>主文本工作区</h2>

@@ -1,0 +1,34 @@
+{
+  "detectedAt": "2026-07-22T17:00:00+08:00",
+  "language": ["TypeScript", "JavaScript"],
+  "platform": "Node.js 20.19.0 / browser / Cloudflare Pages Functions",
+  "frontend": {
+    "framework": "React 19.2.7",
+    "router": "React Router DOM 7.18.1",
+    "buildTool": "Vite 8.1.4",
+    "typeChecker": "TypeScript 6.0.x",
+    "styling": "global CSS and component CSS"
+  },
+  "backend": {
+    "service": "Supabase Auth and Postgres",
+    "client": "@supabase/supabase-js 2.110.5",
+    "edge": "Cloudflare Pages Function Supabase proxy"
+  },
+  "database": {
+    "knownTable": "user_nav_configs",
+    "schema": "unknown",
+    "rlsPolicies": "unknown",
+    "migrations": "not present in repository"
+  },
+  "packageManager": "npm 10.8.2 (package-lock.json v3)",
+  "quality": {
+    "lint": "Oxlint 1.71.0",
+    "build": "tsc -b && vite build",
+    "unitTests": "not configured",
+    "integrationTests": "not configured",
+    "e2eTests": "not configured"
+  },
+  "deployment": "Cloudflare Pages (confirmed by user; Pages Functions directory present)",
+  "monorepo": false,
+  "sourceScanIsolation": ".boss exclusion not applicable to current Vite/global CSS setup"
+}

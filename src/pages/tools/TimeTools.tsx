@@ -37,7 +37,7 @@ export default function TimeTools() {
       setTimestampOutput(
         `本地时间: ${date.toLocaleString()}\nISO 8601: ${date.toISOString()}\nUTC: ${date.toUTCString()}`
       );
-    } catch (e) {
+    } catch {
       setTimestampOutput('转换错误');
     }
   };

@@ -53,7 +53,7 @@ export default function MediaTools() {
         <h1>多媒体与图像 (Media Tools)</h1>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '2rem' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 22rem), 1fr))', gap: '2rem' }}>
         
         {/* Image to Base64 */}
         <div className="tool-card" style={{ display: 'flex', flexDirection: 'column' }}>

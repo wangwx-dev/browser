@@ -1,0 +1,1470 @@
+{
+  "schemaVersion": "1.0.0",
+  "artifact": "ui-design",
+  "mode": "hifi",
+  "feature": "个人开发工作台重构",
+  "updatedAt": "2026-07-24T00:00:00+08:00",
+  "designDirection": {
+    "name": "深色效率工作台",
+    "principles": [
+      "一个入口统一查找网站、工具和命令",
+      "实体表面为主，玻璃拟态仅用于顶栏与浮层",
+      "数据状态始终可见，破坏性操作可确认或撤销",
+      "键盘优先但不牺牲移动端触控",
+      "直接复用现有 React、CSS、Lucide 与 dnd-kit"
+    ]
+  },
+  "tokens": {
+    "colors": {
+      "background": "#07111F",
+      "sidebar": "#091525",
+      "surface": "#0F1B2D",
+      "surfaceRaised": "#16243A",
+      "surfaceHover": "#1D2E47",
+      "border": "#334155",
+      "borderSubtle": "#22314A",
+      "text": "#F8FAFC",
+      "textSecondary": "#CBD5E1",
+      "textMuted": "#94A3B8",
+      "primary": "#0369A1",
+      "primaryHover": "#075985",
+      "primaryActive": "#0C4A6E",
+      "accent": "#38BDF8",
+      "link": "#7DD3FC",
+      "success": "#4ADE80",
+      "warning": "#FBBF24",
+      "error": "#F87171",
+      "info": "#60A5FA",
+      "overlay": "rgba(2, 6, 23, 0.72)",
+      "glass": "rgba(15, 27, 45, 0.88)",
+      "white": "#FFFFFF"
+    },
+    "typography": {
+      "fontSans": "Inter, -apple-system, BlinkMacSystemFont, Segoe UI, PingFang SC, Microsoft YaHei, sans-serif",
+      "fontMono": "SFMono-Regular, Cascadia Code, Consolas, monospace",
+      "display": {
+        "fontSize": "32px",
+        "lineHeight": "40px",
+        "fontWeight": 700,
+        "mobileFontSize": "28px",
+        "mobileLineHeight": "36px"
+      },
+      "h1": {
+        "fontSize": "28px",
+        "lineHeight": "36px",
+        "fontWeight": 700,
+        "mobileFontSize": "24px",
+        "mobileLineHeight": "32px"
+      },
+      "h2": {
+        "fontSize": "20px",
+        "lineHeight": "28px",
+        "fontWeight": 650
+      },
+      "h3": {
+        "fontSize": "16px",
+        "lineHeight": "24px",
+        "fontWeight": 600
+      },
+      "body": {
+        "fontSize": "16px",
+        "lineHeight": "24px",
+        "fontWeight": 400
+      },
+      "small": {
+        "fontSize": "14px",
+        "lineHeight": "20px",
+        "fontWeight": 400
+      },
+      "caption": {
+        "fontSize": "12px",
+        "lineHeight": "16px",
+        "fontWeight": 500
+      },
+      "code": {
+        "fontSize": "14px",
+        "lineHeight": "22px",
+        "fontWeight": 400
+      }
+    },
+    "spacing": {
+      "1": "4px",
+      "2": "8px",
+      "3": "12px",
+      "4": "16px",
+      "5": "20px",
+      "6": "24px",
+      "8": "32px",
+      "10": "40px",
+      "12": "48px",
+      "16": "64px"
+    },
+    "radius": {
+      "sm": "6px",
+      "md": "10px",
+      "lg": "14px",
+      "xl": "18px",
+      "full": "9999px"
+    },
+    "sizes": {
+      "controlSmall": "36px",
+      "controlDefault": "44px",
+      "controlLarge": "52px",
+      "desktopSidebarExpanded": "248px",
+      "desktopSidebarCollapsed": "72px",
+      "desktopTopbar": "64px",
+      "mobileTopbar": "56px",
+      "mobileBottomNav": "64px",
+      "contentMax": "1440px"
+    },
+    "effects": {
+      "cardShadow": "0 8px 24px rgba(0, 0, 0, 0.16)",
+      "floatShadow": "0 16px 48px rgba(0, 0, 0, 0.36)",
+      "focusRing": "0 0 0 2px #07111F, 0 0 0 4px #38BDF8",
+      "glassBackdrop": "blur(16px)",
+      "glassFallback": "#0F1B2D"
+    },
+    "motion": {
+      "fast": "150ms cubic-bezier(0, 0, 0.2, 1)",
+      "normal": "220ms cubic-bezier(0.4, 0, 0.2, 1)",
+      "slow": "300ms cubic-bezier(0, 0, 0.2, 1)",
+      "reducedMotion": {
+        "duration": "1ms",
+        "disable": [
+          "transform",
+          "smooth-scroll",
+          "shimmer",
+          "decorative-spin"
+        ]
+      }
+    },
+    "breakpoints": {
+      "mobile": {
+        "min": 0,
+        "max": 768,
+        "referenceWidth": 360
+      },
+      "medium": {
+        "min": 769,
+        "max": 1279,
+        "referenceWidth": 1024
+      },
+      "desktop": {
+        "min": 1280,
+        "max": null,
+        "referenceWidth": 1280
+      }
+    }
+  },
+  "pages": [
+    {
+      "id": "login",
+      "name": "登录",
+      "route": "/login",
+      "viewport": {
+        "width": 1280,
+        "height": 800
+      },
+      "responsiveVariants": {
+        "360": "表单满宽，左右20px，无悬浮阴影，主按钮52px",
+        "768": "居中400px表单卡",
+        "1280": "居中400px表单卡，品牌标识位于左上"
+      },
+      "frames": [
+        {
+          "id": "login-page",
+          "type": "page",
+          "name": "鉴权入口",
+          "layout": "center",
+          "style": {
+            "background": "{colors.background}",
+            "minHeight": "100dvh",
+            "padding": "{spacing.5}"
+          },
+          "children": [
+            {
+              "id": "login-brand",
+              "type": "brand",
+              "content": "Dev Workbench",
+              "icon": "TerminalSquare",
+              "position": "top-left"
+            },
+            {
+              "id": "auth-card",
+              "type": "component",
+              "componentId": "auth-card",
+              "width": "min(400px, 100%)",
+              "childrenOrder": [
+                "title",
+                "description",
+                "page-alert",
+                "email-field",
+                "password-field",
+                "submit",
+                "mode-switch"
+              ]
+            }
+          ]
+        }
+      ],
+      "states": [
+        {
+          "id": "auth-loading",
+          "trigger": "会话校验中",
+          "presentation": "显示与登录卡同构的静态骨架",
+          "accessibility": "容器 aria-busy=true，状态文字为正在检查登录状态"
+        },
+        {
+          "id": "login-default",
+          "trigger": "未登录",
+          "presentation": "邮箱和密码字段、登录主按钮、创建账号次入口"
+        },
+        {
+          "id": "login-submitting",
+          "trigger": "提交有效表单",
+          "presentation": "按钮 Spinner 加正在登录，保留输入并禁用重复提交"
+        },
+        {
+          "id": "login-error",
+          "trigger": "凭据或网络失败",
+          "presentation": "字段级错误加 role=alert 摘要，聚焦首个错误",
+          "recovery": "修正字段后重试"
+        },
+        {
+          "id": "session-expired",
+          "trigger": "工作台会话失效",
+          "presentation": "提示登录状态已过期，说明未同步内容仍保留在设备",
+          "recovery": "重新登录并返回安全站内目标"
+        }
+      ]
+    },
+    {
+      "id": "home",
+      "name": "统一工作台首页",
+      "route": "/",
+      "viewport": {
+        "width": 1280,
+        "height": 960
+      },
+      "responsiveVariants": {
+        "360": "56px顶栏、5项底部导航、16px边距、所有模块单列、收藏2列",
+        "768": "移动壳、24px边距、收藏4列、卡片2列",
+        "1280": "248px或72px侧栏、64px顶栏、32px边距、内容最大1440px"
+      },
+      "frames": [
+        {
+          "id": "home-app-shell",
+          "type": "page",
+          "name": "工作台应用壳",
+          "layout": "app-shell",
+          "children": [
+            {
+              "id": "desktop-sidebar-instance",
+              "type": "component",
+              "componentId": "desktop-sidebar",
+              "visibleWhen": "viewport >= 769px"
+            },
+            {
+              "id": "mobile-nav-instance",
+              "type": "component",
+              "componentId": "mobile-navigation",
+              "visibleWhen": "viewport <= 768px"
+            },
+            {
+              "id": "home-topbar",
+              "type": "component",
+              "componentId": "topbar",
+              "content": [
+                "页面标题",
+                "命令入口",
+                "同步状态",
+                "账户菜单"
+              ]
+            },
+            {
+              "id": "home-main",
+              "type": "main",
+              "layout": "vertical",
+              "gap": "{spacing.8}",
+              "children": [
+                {
+                  "id": "greeting",
+                  "type": "hero",
+                  "title": "早上好/下午好/晚上好，{用户名}",
+                  "subtitle": "从一个入口继续今天的开发工作"
+                },
+                {
+                  "id": "unified-search",
+                  "type": "component",
+                  "componentId": "command-entry",
+                  "height": "{sizes.controlLarge}",
+                  "placeholder": "搜索网站、工具或命令…"
+                },
+                {
+                  "id": "favorites-section",
+                  "type": "section",
+                  "title": "收藏",
+                  "maxItems": 8,
+                  "componentId": "resource-card",
+                  "layout": "responsive-grid"
+                },
+                {
+                  "id": "recent-section",
+                  "type": "section",
+                  "title": "最近使用",
+                  "maxItems": 10,
+                  "componentId": "resource-card",
+                  "variant": "compact-list"
+                },
+                {
+                  "id": "frequent-tools-section",
+                  "type": "section",
+                  "title": "常用工具",
+                  "maxItems": 6,
+                  "componentId": "resource-card",
+                  "variant": "tool-grid"
+                },
+                {
+                  "id": "navigation-groups-section",
+                  "type": "section",
+                  "title": "网站导航",
+                  "action": "管理导航",
+                  "layout": "grouped-resource-grid"
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "states": [
+        {
+          "id": "home-loading",
+          "trigger": "首次加载个人数据",
+          "presentation": "问候、搜索、收藏和列表同构骨架",
+          "timeout": "10s 后显示加载时间较长及重试"
+        },
+        {
+          "id": "home-ready",
+          "trigger": "数据加载成功",
+          "presentation": "按问候、搜索、收藏、最近、常用工具、导航分组显示"
+        },
+        {
+          "id": "home-empty-favorites",
+          "trigger": "没有收藏",
+          "presentation": "Star 图标、把常用网站或工具固定到这里、浏览工具按钮"
+        },
+        {
+          "id": "home-empty-recent",
+          "trigger": "没有最近使用",
+          "presentation": "Clock3 图标、打开过的内容会出现在这里、开始搜索按钮"
+        },
+        {
+          "id": "home-offline-cache",
+          "trigger": "读取失败但存在缓存",
+          "presentation": "展示缓存内容并置顶离线横幅",
+          "recovery": "继续本地使用，网络恢复自动重试"
+        },
+        {
+          "id": "home-load-error",
+          "trigger": "读取失败且无缓存",
+          "presentation": "错误状态页，不显示空导航",
+          "recovery": "重试或重新登录"
+        }
+      ]
+    },
+    {
+      "id": "command-palette",
+      "name": "全局命令面板",
+      "route": "overlay://command-palette",
+      "viewport": {
+        "width": 1280,
+        "height": 800
+      },
+      "responsiveVariants": {
+        "360": "100dvh全屏，无圆角，查询区和关闭按钮固定，结果独立滚动",
+        "768": "100dvh全屏",
+        "1280": "顶部12vh，宽680px，最大高70vh，居中浮层"
+      },
+      "frames": [
+        {
+          "id": "command-dialog",
+          "type": "dialog",
+          "name": "搜索网站、工具或命令",
+          "componentId": "command-palette",
+          "style": {
+            "background": "{colors.glass}",
+            "fallbackBackground": "{colors.surface}",
+            "border": "1px solid {colors.border}",
+            "radius": "{radius.xl}",
+            "shadow": "{effects.floatShadow}"
+          },
+          "children": [
+            {
+              "id": "command-query",
+              "type": "combobox",
+              "placeholder": "搜索网站、工具或命令…",
+              "height": "56px"
+            },
+            {
+              "id": "command-results",
+              "type": "listbox",
+              "itemComponentId": "command-result-row",
+              "itemHeight": "48px"
+            },
+            {
+              "id": "command-help",
+              "type": "footer",
+              "visibleWhen": "viewport >= 769px",
+              "content": "↑↓ 选择 · Enter 打开 · Esc 关闭"
+            }
+          ]
+        }
+      ],
+      "states": [
+        {
+          "id": "command-empty-query",
+          "trigger": "查询为空",
+          "presentation": "依次显示收藏、最近使用、常用工具"
+        },
+        {
+          "id": "command-searching",
+          "trigger": "查询处理超过150ms",
+          "presentation": "查询框右侧显示16px Spinner，保持活动资源ID"
+        },
+        {
+          "id": "command-results-ready",
+          "trigger": "有匹配结果",
+          "presentation": "统一列表，以网站或工具标签区分"
+        },
+        {
+          "id": "command-no-results",
+          "trigger": "无匹配",
+          "presentation": "没有找到匹配项，提供清除搜索和新增网站",
+          "privacy": "不得发起外部搜索"
+        }
+      ]
+    },
+    {
+      "id": "navigation",
+      "name": "我的导航",
+      "route": "/navigation",
+      "viewport": {
+        "width": 1280,
+        "height": 960
+      },
+      "responsiveVariants": {
+        "360": "单列网站列表，操作进入菜单，排序用移至/上移/下移",
+        "768": "单列或2列，自定义Dialog全屏或底部Sheet，不依赖触摸拖拽",
+        "1280": "分类描边Section，网站响应式卡片网格，指针与键盘拖拽"
+      },
+      "frames": [
+        {
+          "id": "navigation-page",
+          "type": "page",
+          "layout": "app-shell",
+          "children": [
+            {
+              "id": "navigation-header",
+              "type": "page-header",
+              "title": "我的导航",
+              "children": [
+                "同步状态",
+                "筛选",
+                "编辑布局",
+                "新增网站"
+              ]
+            },
+            {
+              "id": "navigation-categories",
+              "type": "sortable-sections",
+              "componentId": "navigation-category",
+              "itemComponentId": "resource-card"
+            },
+            {
+              "id": "navigation-editor-dialog",
+              "type": "dialog",
+              "componentId": "navigation-editor",
+              "visibleWhen": "create-or-edit"
+            },
+            {
+              "id": "navigation-delete-dialog",
+              "type": "dialog",
+              "componentId": "confirmation-dialog",
+              "visibleWhen": "delete-requested"
+            }
+          ]
+        }
+      ],
+      "states": [
+        {
+          "id": "navigation-loading",
+          "trigger": "首次读取",
+          "presentation": "分类标题和网站卡同构骨架"
+        },
+        {
+          "id": "navigation-ready",
+          "trigger": "默认浏览",
+          "presentation": "分类与网站可打开、收藏和进入更多菜单"
+        },
+        {
+          "id": "navigation-editing",
+          "trigger": "进入编辑布局",
+          "presentation": "显示拖拽手柄、新增分类、编辑和删除动作",
+          "keyboard": "Space抓取或放下，方向键移动，Esc取消"
+        },
+        {
+          "id": "navigation-filtered",
+          "trigger": "筛选词非空",
+          "presentation": "只显示匹配分类和网站，拖拽禁用并解释原因"
+        },
+        {
+          "id": "navigation-empty",
+          "trigger": "没有任何导航数据",
+          "presentation": "FolderPlus 图标、建立第一个分类、创建分类按钮"
+        },
+        {
+          "id": "navigation-no-results",
+          "trigger": "筛选无结果",
+          "presentation": "没有匹配的网站，提供清除筛选和新增网站"
+        },
+        {
+          "id": "navigation-pending-sync",
+          "trigger": "任意本地变更",
+          "presentation": "100ms内乐观更新并显示待同步"
+        },
+        {
+          "id": "navigation-offline",
+          "trigger": "网络不可用",
+          "presentation": "离线横幅，修改已保存在本机",
+          "recovery": "恢复网络后自动重试，也可查看队列"
+        },
+        {
+          "id": "navigation-sync-failed",
+          "trigger": "提交失败",
+          "presentation": "同步失败状态和重试按钮，不回滚本地数据"
+        },
+        {
+          "id": "navigation-conflict",
+          "trigger": "本地待同步与云端冲突",
+          "presentation": "对话框并列显示本地与云端更新时间",
+          "actions": [
+            "保留本地",
+            "使用云端",
+            "稍后处理"
+          ]
+        },
+        {
+          "id": "navigation-undo",
+          "trigger": "删除或移动完成",
+          "presentation": "7秒Undo Toast，含撤销按钮",
+          "dataBehavior": "撤销进入同一持久化同步队列"
+        }
+      ]
+    },
+    {
+      "id": "tool-shell",
+      "name": "统一工具页",
+      "route": "/tools/:toolId",
+      "routeExamples": [
+        "/tools/json",
+        "/tools/encode",
+        "/tools/text",
+        "/tools/diff",
+        "/tools/network",
+        "/tools/security",
+        "/tools/docker"
+      ],
+      "viewport": {
+        "width": 1280,
+        "height": 960
+      },
+      "responsiveVariants": {
+        "360": "输入、操作、结果单列；编辑器最小高220px；结果独立滚动",
+        "768": "单列；操作栏允许换行；所有动作44px",
+        "1280": "适合对照的工具双栏，每栏至少360px；其他工具单列最大1040px"
+      },
+      "frames": [
+        {
+          "id": "tool-page",
+          "type": "page",
+          "layout": "app-shell",
+          "children": [
+            {
+              "id": "tool-header",
+              "type": "page-header",
+              "children": [
+                "工具图标",
+                "标题",
+                "描述",
+                "仅本地处理或外部请求说明",
+                "收藏"
+              ]
+            },
+            {
+              "id": "tool-workspace",
+              "type": "component",
+              "componentId": "tool-shell",
+              "children": [
+                {
+                  "id": "tool-input-panel",
+                  "type": "panel",
+                  "componentId": "tool-input-panel"
+                },
+                {
+                  "id": "tool-actions",
+                  "type": "toolbar",
+                  "componentId": "tool-action-bar"
+                },
+                {
+                  "id": "tool-result-panel",
+                  "type": "panel",
+                  "componentId": "tool-result-panel"
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "states": [
+        {
+          "id": "tool-pristine",
+          "trigger": "尚未执行",
+          "presentation": "结果将在这里显示，载入示例可用"
+        },
+        {
+          "id": "tool-running",
+          "trigger": "主操作或Ctrl/Cmd+Enter",
+          "presentation": "主按钮Spinner加处理中，保留输入，禁止重复执行"
+        },
+        {
+          "id": "tool-success",
+          "trigger": "产生结果",
+          "presentation": "成功状态标题、结果内容和复制操作"
+        },
+        {
+          "id": "tool-empty-success",
+          "trigger": "处理成功但无输出",
+          "presentation": "处理成功，无输出"
+        },
+        {
+          "id": "tool-invalid-input",
+          "trigger": "输入非法",
+          "presentation": "输入区域附近显示中文可修正错误，并聚焦首个错误"
+        },
+        {
+          "id": "tool-failure",
+          "trigger": "执行失败",
+          "presentation": "错误状态；若保留之前成功结果则标注上次结果"
+        },
+        {
+          "id": "tool-copy-success",
+          "trigger": "复制成功",
+          "presentation": "Toast：已复制到剪贴板"
+        },
+        {
+          "id": "tool-copy-failed",
+          "trigger": "剪贴板权限失败",
+          "presentation": "Toast：无法自动复制，请手动选择结果",
+          "recovery": "聚焦并选择只读结果区"
+        }
+      ]
+    },
+    {
+      "id": "app-error",
+      "name": "错误与恢复",
+      "route": "*",
+      "viewport": {
+        "width": 1280,
+        "height": 800
+      },
+      "frames": [
+        {
+          "id": "error-state-page",
+          "type": "page",
+          "layout": "center",
+          "children": [
+            {
+              "id": "global-state-panel",
+              "type": "component",
+              "componentId": "state-panel",
+              "maxWidth": "480px"
+            }
+          ]
+        }
+      ],
+      "states": [
+        {
+          "id": "not-found",
+          "trigger": "路由不存在",
+          "icon": "FileQuestion",
+          "title": "页面不存在",
+          "action": "返回首页"
+        },
+        {
+          "id": "permission-denied",
+          "trigger": "无权限或会话无效",
+          "icon": "ShieldAlert",
+          "title": "无法访问此内容",
+          "action": "重新登录"
+        },
+        {
+          "id": "unknown-error",
+          "trigger": "应用错误边界",
+          "icon": "TriangleAlert",
+          "title": "工作台暂时无法显示",
+          "actions": [
+            "重试",
+            "返回首页"
+          ],
+          "privacy": "不显示堆栈、令牌、URL参数或工具输入"
+        }
+      ]
+    }
+  ],
+  "components": [
+    {
+      "id": "app-shell",
+      "name": "AppShell",
+      "purpose": "统一桌面侧栏、顶栏、移动底部导航和主滚动区",
+      "variants": [
+        "desktop-expanded",
+        "desktop-collapsed",
+        "medium-rail",
+        "mobile"
+      ],
+      "states": [
+        "default",
+        "drawer-open",
+        "offline-banner",
+        "session-expired"
+      ],
+      "accessibility": [
+        "提供跳到主内容链接",
+        "header nav main 使用语义元素",
+        "主内容拥有唯一H1"
+      ]
+    },
+    {
+      "id": "desktop-sidebar",
+      "name": "DesktopSidebar",
+      "purpose": "桌面与中等屏的首页、导航、工具分组和账户入口",
+      "size": {
+        "expanded": "{sizes.desktopSidebarExpanded}",
+        "collapsed": "{sizes.desktopSidebarCollapsed}"
+      },
+      "states": [
+        "expanded",
+        "collapsed",
+        "group-expanded",
+        "group-collapsed",
+        "active-item"
+      ],
+      "accessibility": [
+        "当前项 aria-current=page",
+        "折叠态图标有Tooltip和aria-label",
+        "折叠按钮说明当前与下一状态"
+      ]
+    },
+    {
+      "id": "mobile-navigation",
+      "name": "MobileNavigation",
+      "purpose": "768px及以下的底部导航与工具/更多抽屉",
+      "items": [
+        "首页",
+        "搜索",
+        "导航",
+        "工具",
+        "更多"
+      ],
+      "states": [
+        "default",
+        "active",
+        "drawer-open",
+        "sheet-open"
+      ],
+      "constraints": [
+        "每项点击盒至少44x44px",
+        "底部包含safe-area-inset-bottom",
+        "主内容预留至少88px底部空间"
+      ]
+    },
+    {
+      "id": "topbar",
+      "name": "Topbar",
+      "purpose": "当前页面上下文、命令入口、同步状态和账户操作",
+      "height": {
+        "desktop": "{sizes.desktopTopbar}",
+        "mobile": "{sizes.mobileTopbar}"
+      },
+      "style": {
+        "background": "{colors.glass}",
+        "fallback": "{colors.surface}",
+        "borderBottom": "1px solid {colors.borderSubtle}"
+      }
+    },
+    {
+      "id": "command-entry",
+      "name": "CommandEntry",
+      "purpose": "打开统一命令面板，不维护独立搜索结果",
+      "variants": [
+        "hero",
+        "topbar",
+        "mobile-tab"
+      ],
+      "states": [
+        "default",
+        "hover",
+        "focus-visible",
+        "disabled"
+      ],
+      "keyboard": "非输入焦点下Ctrl/Cmd+K触发",
+      "accessibility": "使用button语义，aria-haspopup=dialog"
+    },
+    {
+      "id": "command-palette",
+      "name": "CommandPalette",
+      "purpose": "统一查找并执行网站、工具和命令",
+      "variants": [
+        "desktop-modal",
+        "mobile-fullscreen"
+      ],
+      "states": [
+        "empty-query",
+        "searching",
+        "results",
+        "no-results"
+      ],
+      "keyboardModel": {
+        "open": "Ctrl/Cmd+K，仅在非input/textarea/select/contenteditable焦点",
+        "move": "ArrowUp/ArrowDown",
+        "edge": "Home/End",
+        "execute": "Enter",
+        "close": "Escape并恢复触发焦点",
+        "focusTrap": "Tab/Shift+Tab圈定在对话框"
+      },
+      "accessibility": [
+        "role=dialog aria-modal=true",
+        "查询框使用combobox和aria-activedescendant",
+        "结果使用listbox/option",
+        "连续触发不创建第二个实例"
+      ]
+    },
+    {
+      "id": "command-result-row",
+      "name": "CommandResultRow",
+      "purpose": "显示网站或工具搜索结果",
+      "minHeight": "48px",
+      "content": [
+        "20px图标",
+        "名称",
+        "命中摘要",
+        "网站或工具标签"
+      ],
+      "states": [
+        "default",
+        "hover",
+        "active",
+        "disabled"
+      ]
+    },
+    {
+      "id": "resource-card",
+      "name": "ResourceCard",
+      "purpose": "首页、导航和最近使用的统一资源展示",
+      "variants": [
+        "website-grid",
+        "tool-grid",
+        "compact-list",
+        "sortable"
+      ],
+      "states": [
+        "default",
+        "hover",
+        "focus-visible",
+        "favorite",
+        "active",
+        "disabled",
+        "dragging"
+      ],
+      "accessibility": [
+        "整卡可点击时收藏和菜单为独立按钮并阻止冒泡",
+        "长文本省略但可通过Tooltip读取",
+        "favicon失败回退Globe"
+      ]
+    },
+    {
+      "id": "sync-indicator",
+      "name": "SyncIndicator",
+      "purpose": "持续表达个人数据持久化状态",
+      "variants": [
+        "full",
+        "compact",
+        "mobile-sheet-trigger"
+      ],
+      "states": [
+        {
+          "id": "pending",
+          "icon": "Clock3",
+          "label": "待同步",
+          "color": "{colors.warning}"
+        },
+        {
+          "id": "syncing",
+          "icon": "RefreshCw",
+          "label": "同步中",
+          "color": "{colors.accent}"
+        },
+        {
+          "id": "synced",
+          "icon": "CloudCheck",
+          "label": "已同步",
+          "color": "{colors.success}"
+        },
+        {
+          "id": "offline",
+          "icon": "WifiOff",
+          "label": "离线，修改已保存在本机",
+          "color": "{colors.warning}"
+        },
+        {
+          "id": "failed",
+          "icon": "CloudOff",
+          "label": "同步失败",
+          "color": "{colors.error}"
+        }
+      ],
+      "accessibility": "重要状态变化使用aria-live=polite，颜色同时配图标和文字"
+    },
+    {
+      "id": "button",
+      "name": "Button",
+      "purpose": "统一所有操作按钮",
+      "variants": [
+        "primary",
+        "secondary",
+        "ghost",
+        "danger",
+        "icon"
+      ],
+      "sizes": [
+        "36px desktop-compact",
+        "44px default",
+        "52px large"
+      ],
+      "states": [
+        "default",
+        "hover",
+        "active",
+        "focus-visible",
+        "disabled",
+        "loading"
+      ],
+      "accessibility": [
+        "移动点击盒至少44x44px",
+        "图标按钮必须有aria-label和Tooltip",
+        "loading保留可访问名称并阻止重复提交"
+      ]
+    },
+    {
+      "id": "form-field",
+      "name": "FormField",
+      "purpose": "输入、搜索、密码、选择器和多行编辑器",
+      "variants": [
+        "text",
+        "password",
+        "search",
+        "select",
+        "textarea",
+        "code-editor"
+      ],
+      "states": [
+        "default",
+        "hover",
+        "focus-visible",
+        "error",
+        "disabled",
+        "readonly"
+      ],
+      "accessibility": [
+        "永久可见label",
+        "错误通过aria-describedby关联",
+        "错误同时使用图标和文字",
+        "placeholder不代替label"
+      ]
+    },
+    {
+      "id": "navigation-category",
+      "name": "NavigationCategory",
+      "purpose": "分类标题、数量、排序和网站容器",
+      "variants": [
+        "browse",
+        "editing",
+        "drop-target",
+        "filtered"
+      ],
+      "states": [
+        "default",
+        "dragging",
+        "drag-over",
+        "disabled-sort",
+        "empty"
+      ],
+      "keyboard": "Space抓取或放下，方向键移动，Esc取消，实时播报位置"
+    },
+    {
+      "id": "navigation-editor",
+      "name": "NavigationEditorDialog",
+      "purpose": "新增和编辑网站或分类，替代浏览器原生prompt",
+      "fields": [
+        {
+          "name": "名称",
+          "required": true,
+          "maxLength": 80
+        },
+        {
+          "name": "URL",
+          "required": true,
+          "maxLength": 2048,
+          "allowedProtocols": [
+            "http",
+            "https"
+          ]
+        },
+        {
+          "name": "描述",
+          "required": false,
+          "maxLength": 240
+        },
+        {
+          "name": "图标",
+          "required": false
+        },
+        {
+          "name": "所属分类",
+          "required": true
+        }
+      ],
+      "states": [
+        "create",
+        "edit",
+        "invalid",
+        "submitting",
+        "duplicate-warning"
+      ]
+    },
+    {
+      "id": "confirmation-dialog",
+      "name": "ConfirmationDialog",
+      "purpose": "删除、放弃待同步内容和冲突决策",
+      "variants": [
+        "delete-resource",
+        "delete-category",
+        "unsynced-signout",
+        "sync-conflict"
+      ],
+      "states": [
+        "default",
+        "submitting",
+        "error"
+      ],
+      "accessibility": [
+        "role=dialog aria-modal=true",
+        "焦点圈定并恢复",
+        "删除类首焦点为取消",
+        "危险按钮使用具体动词"
+      ]
+    },
+    {
+      "id": "toast",
+      "name": "Toast",
+      "purpose": "非阻塞反馈与撤销",
+      "variants": [
+        "success",
+        "info",
+        "warning",
+        "error",
+        "undo"
+      ],
+      "duration": {
+        "success": "4s",
+        "info": "4s",
+        "warning": "6s",
+        "error": "6s",
+        "undo": "7s"
+      },
+      "placement": {
+        "desktop": "top-right",
+        "mobile": "above-bottom-navigation"
+      },
+      "accessibility": [
+        "常规role=status，紧急错误role=alert",
+        "悬停或键盘聚焦暂停计时",
+        "重复消息合并计数",
+        "始终可手动关闭"
+      ]
+    },
+    {
+      "id": "tool-shell",
+      "name": "ToolShell",
+      "purpose": "13类工具统一标题、隐私、输入、操作和结果骨架",
+      "variants": [
+        "single-column",
+        "comparison-two-column"
+      ],
+      "states": [
+        "pristine",
+        "running",
+        "success",
+        "empty-success",
+        "invalid",
+        "failure"
+      ],
+      "actions": [
+        "载入示例",
+        "清空",
+        "执行",
+        "复制结果"
+      ],
+      "keyboard": "Ctrl/Cmd+Enter执行主操作",
+      "privacy": "本地工具显示Lock加仅在浏览器本地处理；外部调用标明目标与目的并需显式触发"
+    },
+    {
+      "id": "tool-input-panel",
+      "name": "ToolInputPanel",
+      "purpose": "工具输入与字段级错误",
+      "minHeight": {
+        "mobileEditor": "220px",
+        "desktopEditor": "280px"
+      },
+      "states": [
+        "empty",
+        "filled",
+        "invalid",
+        "disabled"
+      ]
+    },
+    {
+      "id": "tool-action-bar",
+      "name": "ToolActionBar",
+      "purpose": "保持所有工具动作顺序一致",
+      "order": [
+        "载入示例",
+        "清空",
+        "spacer",
+        "执行"
+      ],
+      "states": [
+        "ready",
+        "running",
+        "disabled"
+      ]
+    },
+    {
+      "id": "tool-result-panel",
+      "name": "ToolResultPanel",
+      "purpose": "空、成功、失败和复制结果",
+      "minHeight": {
+        "mobile": "160px",
+        "desktop": "280px"
+      },
+      "states": [
+        "pristine",
+        "success",
+        "empty-success",
+        "failure",
+        "stale-result"
+      ],
+      "accessibility": "结果标题与状态通过aria-live=polite播报，代码区可独立滚动"
+    },
+    {
+      "id": "state-panel",
+      "name": "StatePanel",
+      "purpose": "加载超时、空、无结果、离线、权限与未知错误",
+      "variants": [
+        "empty-data",
+        "no-results",
+        "loading-timeout",
+        "offline",
+        "permission",
+        "not-found",
+        "unknown-error"
+      ],
+      "requirements": [
+        "标题说明原因",
+        "描述说明下一步",
+        "至少一个恢复动作",
+        "状态同时使用Lucide图标和文字"
+      ]
+    },
+    {
+      "id": "auth-card",
+      "name": "AuthCard",
+      "purpose": "登录、注册和鉴权错误",
+      "width": "400px",
+      "states": [
+        "login",
+        "register",
+        "submitting",
+        "error",
+        "success"
+      ],
+      "accessibility": [
+        "邮箱与密码使用显式label",
+        "显示密码按钮有aria-pressed与可访问名称",
+        "提交错误使用role=alert"
+      ]
+    }
+  ],
+  "prototype": {
+    "startPageId": "login",
+    "links": [
+      {
+        "id": "login-success",
+        "sourceId": "auth-card",
+        "event": "submit-success",
+        "targetId": "home",
+        "transition": "replace-route",
+        "note": "存在安全站内返回地址时优先返回原目标"
+      },
+      {
+        "id": "home-open-command",
+        "sourceId": "unified-search",
+        "event": "click",
+        "targetId": "command-palette",
+        "transition": "open-dialog"
+      },
+      {
+        "id": "global-shortcut-open-command",
+        "sourceId": "app-shell",
+        "event": "Ctrl/Cmd+K",
+        "targetId": "command-palette",
+        "transition": "open-singleton-dialog",
+        "condition": "focus不在input/textarea/select/contenteditable"
+      },
+      {
+        "id": "command-open-tool",
+        "sourceId": "command-results",
+        "event": "Enter on tool result",
+        "targetId": "tool-shell",
+        "transition": "current-route",
+        "sideEffect": "成功打开后记录最近使用"
+      },
+      {
+        "id": "command-open-website",
+        "sourceId": "command-results",
+        "event": "Enter on website result",
+        "targetId": "external-website",
+        "transition": "new-tab",
+        "sideEffect": "成功打开后记录最近使用"
+      },
+      {
+        "id": "command-close",
+        "sourceId": "command-dialog",
+        "event": "Escape",
+        "targetId": "trigger-element",
+        "transition": "close-dialog-and-restore-focus"
+      },
+      {
+        "id": "home-manage-navigation",
+        "sourceId": "navigation-groups-section",
+        "event": "manage",
+        "targetId": "navigation",
+        "transition": "current-route"
+      },
+      {
+        "id": "navigation-create",
+        "sourceId": "navigation-header",
+        "event": "新增网站",
+        "targetId": "navigation-editor-dialog",
+        "transition": "open-dialog"
+      },
+      {
+        "id": "navigation-save",
+        "sourceId": "navigation-editor-dialog",
+        "event": "valid-submit",
+        "targetId": "navigation-pending-sync",
+        "transition": "optimistic-update",
+        "sideEffect": "索引、卡片和收藏状态在1秒内一致"
+      },
+      {
+        "id": "navigation-delete",
+        "sourceId": "navigation-delete-dialog",
+        "event": "confirm",
+        "targetId": "navigation-undo",
+        "transition": "close-dialog-show-toast"
+      },
+      {
+        "id": "navigation-undo-action",
+        "sourceId": "toast",
+        "event": "撤销",
+        "targetId": "navigation-ready",
+        "transition": "restore-and-enqueue-sync"
+      },
+      {
+        "id": "navigation-sync-retry",
+        "sourceId": "sync-indicator",
+        "event": "重试",
+        "targetId": "navigation-pending-sync",
+        "transition": "retry-queue"
+      },
+      {
+        "id": "tool-run",
+        "sourceId": "tool-action-bar",
+        "event": "执行或Ctrl/Cmd+Enter",
+        "targetId": "tool-running",
+        "transition": "inline-state"
+      },
+      {
+        "id": "tool-run-success",
+        "sourceId": "tool-running",
+        "event": "resolve",
+        "targetId": "tool-success",
+        "transition": "inline-state"
+      },
+      {
+        "id": "tool-run-invalid",
+        "sourceId": "tool-running",
+        "event": "validation-error",
+        "targetId": "tool-invalid-input",
+        "transition": "focus-first-error"
+      },
+      {
+        "id": "mobile-open-tools",
+        "sourceId": "mobile-navigation",
+        "event": "工具",
+        "targetId": "mobile-tool-drawer",
+        "transition": "open-sheet"
+      },
+      {
+        "id": "session-expired-login",
+        "sourceId": "app-shell",
+        "event": "auth-session-expired",
+        "targetId": "login",
+        "transition": "replace-route",
+        "sideEffect": "清除内存中的个人云数据但保留安全本地待同步队列"
+      }
+    ]
+  },
+  "implementationHints": {
+    "preferredFramework": "React 18 + TypeScript + React Router",
+    "styling": "现有 App.css 与 index.css 上扩展 CSS Variables 和组件 class；不引入 CSS-in-JS 或 UI 框架",
+    "iconLibrary": "lucide-react",
+    "existingLibraries": [
+      "@dnd-kit/core",
+      "@dnd-kit/sortable",
+      "@supabase/supabase-js"
+    ],
+    "requiredComponents": [
+      "AppShell",
+      "DesktopSidebar",
+      "MobileNavigation",
+      "Topbar",
+      "CommandPalette",
+      "CommandResultRow",
+      "ResourceCard",
+      "SyncIndicator",
+      "ToastProvider",
+      "Dialog",
+      "NavigationEditorDialog",
+      "ToolShell",
+      "ToolInputPanel",
+      "ToolActionBar",
+      "ToolResultPanel",
+      "StatePanel",
+      "ErrorBoundary"
+    ],
+    "resourceIndex": {
+      "source": "将 Sidebar.tsx 内工具定义提升为集中式工具清单，并与个人网站构建同一本地索引",
+      "searchFields": [
+        "网站名称",
+        "网站描述",
+        "URL",
+        "网站分类",
+        "工具名称",
+        "工具别名",
+        "工具描述",
+        "工具分类"
+      ],
+      "ranking": "名称前缀优先，其次名称包含、分类/别名、描述；收藏与最近使用只作加权",
+      "performance": "500网站+100工具，结果更新P95不超过100ms"
+    },
+    "responsiveRules": {
+      "360": [
+        "移动壳和5项底部导航",
+        "页面左右16px",
+        "所有工具按输入-操作-结果单列",
+        "命令面板100dvh全屏",
+        "body无水平滚动"
+      ],
+      "768": [
+        "仍使用移动壳",
+        "页面左右24px",
+        "命令面板全屏",
+        "导航排序必须提供菜单等价路径"
+      ],
+      "1280": [
+        "248px展开或72px折叠侧栏",
+        "64px顶栏",
+        "页面左右32px",
+        "适合对照的工具允许双栏"
+      ]
+    },
+    "accessibilityNotes": [
+      "正文对比度至少4.5:1，大字至少3:1，非文本UI至少3:1",
+      "所有可交互元素显示2px #38BDF8焦点环并保留2px offset",
+      "移动端触控目标至少44x44px，相邻目标至少8px",
+      "命令面板遵循dialog+combobox+listbox模式并恢复焦点",
+      "同步、Toast、排序位置和表单错误使用克制的aria-live",
+      "支持200%字体缩放和prefers-reduced-motion",
+      "任何图标按钮都提供aria-label与Tooltip"
+    ],
+    "dataBehavior": [
+      "导航变更先乐观更新并持久化本地待同步队列",
+      "失败不回滚用户刚完成的修改，恢复网络后自动重试",
+      "删除和移动显示7秒撤销，撤销使用同一同步队列",
+      "筛选期间禁用拖拽并显示原因",
+      "冲突必须显示本地与云端更新时间并由用户选择",
+      "打开失败不记录最近使用"
+    ],
+    "privacy": [
+      "工具输入默认本地处理且不得上传Supabase、写日志或写最近使用",
+      "JWT、密码、私钥和证书私密材料不得持久化",
+      "外部API调用前展示目标、目的并由用户显式触发",
+      "搜索词不得发送第三方"
+    ],
+    "migrationOrder": [
+      "先建立语义token和AppShell，不破坏现有路由",
+      "集中工具清单并实现命令面板与统一索引",
+      "实现首页收藏、最近和分组",
+      "替换Navigation.tsx中的原生prompt/confirm并接入同步与撤销",
+      "逐个将13类工具迁入ToolShell",
+      "补齐全局状态、错误边界、移动导航和无障碍回归"
+    ],
+    "testViewports": [
+      {
+        "width": 360,
+        "height": 800
+      },
+      {
+        "width": 768,
+        "height": 1024
+      },
+      {
+        "width": 1280,
+        "height": 800
+      },
+      {
+        "width": 1440,
+        "height": 900
+      }
+    ],
+    "constraints": [
+      "不新增UI、图标或动效依赖",
+      "不以hover作为唯一发现方式",
+      "不使用浏览器原生prompt/confirm",
+      "不让代码编辑器或结果区导致页面级水平溢出",
+      "玻璃模糊必须有不透明回退",
+      "所有异步区域区分加载、空、无结果、离线、失败和权限状态"
+    ]
+  }
+}

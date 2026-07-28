@@ -1,91 +1,227 @@
-import { useState } from 'react';
-import { v4 as uuidv4 } from 'uuid';
+import { KeyRound, ListPlus } from 'lucide-react'
+import { useState } from 'react'
+import { v4 as uuidv4 } from 'uuid'
+
+import {
+  ToolActions,
+  ToolFeedback,
+  ToolOutput,
+  ToolSection,
+  ToolShell,
+  type ToolFeedbackState,
+} from '../../components/tools/ToolShell'
+import {
+  PASSWORD_MAX_LENGTH,
+  PASSWORD_MIN_LENGTH,
+  generateSecurePassword,
+} from './data-tools-random'
+
+const UUID_MIN_COUNT = 1
+const UUID_MAX_COUNT = 1000
+
+interface IntegerValidationResult {
+  value?: number
+  error?: string
+}
+
+function validateInteger(
+  rawValue: string,
+  label: string,
+  minimum: number,
+  maximum: number,
+): IntegerValidationResult {
+  const value = Number(rawValue.trim())
+  if (!rawValue.trim() || !Number.isInteger(value)) {
+    return { error: `${label}必须是整数。` }
+  }
+  if (value < minimum || value > maximum) {
+    return { error: `${label}需在 ${minimum} 到 ${maximum} 之间。` }
+  }
+  return { value }
+}
 
 export default function DataTools() {
-  const [uuidCount, setUuidCount] = useState(5);
-  const [uuidOutput, setUuidOutput] = useState('');
+  const [uuidCount, setUuidCount] = useState('5')
+  const [uuidOutput, setUuidOutput] = useState('')
+  const [uuidFeedback, setUuidFeedback] = useState<ToolFeedbackState | null>(null)
 
-  const [pwdLength, setPwdLength] = useState(16);
-  const [pwdOutput, setPwdOutput] = useState('');
+  const [passwordLength, setPasswordLength] = useState('20')
+  const [passwordOutput, setPasswordOutput] = useState('')
+  const [passwordFeedback, setPasswordFeedback] = useState<ToolFeedbackState | null>(null)
 
   const handleGenerateUUIDs = () => {
-    let count = parseInt(uuidCount as any, 10);
-    if (isNaN(count) || count < 1) count = 1;
-    if (count > 1000) count = 1000;
-    
-    const uuids = [];
-    for (let i = 0; i < count; i++) {
-      uuids.push(uuidv4());
+    const validation = validateInteger(
+      uuidCount,
+      '生成数量',
+      UUID_MIN_COUNT,
+      UUID_MAX_COUNT,
+    )
+    if (validation.value === undefined) {
+      setUuidFeedback({ tone: 'error', message: validation.error ?? '生成数量无效。' })
+      return
     }
-    setUuidOutput(uuids.join('\n'));
-  };
+
+    const uuids = Array.from({ length: validation.value }, () => uuidv4())
+    setUuidOutput(uuids.join('\n'))
+    setUuidFeedback({
+      tone: 'success',
+      message: `已在本机生成 ${validation.value} 个 UUID v4。`,
+    })
+  }
 
   const handleGeneratePassword = () => {
-    let len = parseInt(pwdLength as any, 10);
-    if (isNaN(len) || len < 4) len = 4;
-    if (len > 128) len = 128;
-
-    const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()_+~`|}{[]:;?><,./-=";
-    let retVal = "";
-    for (let i = 0, n = charset.length; i < len; ++i) {
-        retVal += charset.charAt(Math.floor(Math.random() * n));
+    const validation = validateInteger(
+      passwordLength,
+      '密码长度',
+      PASSWORD_MIN_LENGTH,
+      PASSWORD_MAX_LENGTH,
+    )
+    if (validation.value === undefined) {
+      setPasswordFeedback({ tone: 'error', message: validation.error ?? '密码长度无效。' })
+      return
     }
-    setPwdOutput(retVal);
-  };
+
+    try {
+      const password = generateSecurePassword(validation.value)
+      setPasswordOutput(password)
+      setPasswordFeedback({
+        tone: 'success',
+        message: `已使用 Web Crypto 在本机生成 ${validation.value} 位密码。`,
+      })
+    } catch {
+      setPasswordOutput('')
+      setPasswordFeedback({
+        tone: 'error',
+        message: '当前浏览器无法使用安全随机源，未生成密码。',
+      })
+    }
+  }
 
   return (
-    <div className="page-container">
-      <div className="header">
-        <h1>Mock数据 & 随机生成器</h1>
-      </div>
-
-      <div className="tool-card">
-        <div className="tool-header">
-          <h2>UUID / GUID 批量生成器</h2>
-          <p>生成指定数量的 UUID v4，最大支持 1000 个。</p>
-        </div>
-        <div className="input-group">
-          <label>生成数量</label>
-          <input 
+    <ToolShell
+      title="Mock 数据与随机生成器"
+      description="快速生成开发测试数据；结果不会自动上传或写入云端。"
+    >
+      <ToolSection
+        title="UUID / GUID 批量生成器"
+        description="生成标准 UUID v4，一次最多 1000 个。"
+      >
+        <div className="tool-field">
+          <label htmlFor="uuid-count">生成数量</label>
+          <input
+            id="uuid-count"
             type="number"
-            className="form-control" 
+            inputMode="numeric"
             value={uuidCount}
-            onChange={(e) => setUuidCount(parseInt(e.target.value) || 0)}
-            min="1"
-            max="1000"
+            onChange={(event) => {
+              setUuidCount(event.currentTarget.value)
+              setUuidFeedback(null)
+            }}
+            min={UUID_MIN_COUNT}
+            max={UUID_MAX_COUNT}
+            step="1"
+            aria-describedby="uuid-count-hint"
+            aria-invalid={uuidFeedback?.tone === 'error'}
           />
+          <small id="uuid-count-hint">请输入 {UUID_MIN_COUNT}–{UUID_MAX_COUNT} 的整数。</small>
         </div>
-        <div className="button-group">
-          <button className="btn" onClick={handleGenerateUUIDs}>批量生成 UUID</button>
-        </div>
-        {uuidOutput && <div className="result-box">{uuidOutput}</div>}
-      </div>
 
-      <div className="tool-card">
-        <div className="tool-header">
-          <h2>高强度密码生成器</h2>
-          <p>按指定长度生成包含大小写、数字及特殊符号的随机密码</p>
-        </div>
-        <div className="input-group">
-          <label>密码长度</label>
-          <input 
+        <ToolActions
+          copyText={uuidOutput}
+          copyLabel="复制 UUID"
+          copySuccessMessage="UUID 已复制到剪贴板。"
+          onClear={() => {
+            setUuidOutput('')
+            setUuidFeedback(null)
+          }}
+          clearLabel="清空 UUID"
+          clearDisabled={!uuidOutput}
+          clearSuccessMessage="UUID 结果已清空。"
+          onExample={() => {
+            setUuidCount('3')
+            setUuidOutput('')
+            setUuidFeedback(null)
+          }}
+          exampleLabel="UUID 示例"
+          exampleSuccessMessage="示例数量 3 已填入。"
+        >
+          <button type="button" className="tool-action-button" onClick={handleGenerateUUIDs}>
+            <ListPlus aria-hidden="true" size={17} />
+            生成 UUID
+          </button>
+        </ToolActions>
+
+        <ToolFeedback feedback={uuidFeedback} />
+        <ToolOutput
+          id="uuid-output"
+          label="生成结果"
+          value={uuidOutput}
+          emptyMessage="设置数量后生成 UUID。"
+          meta={uuidOutput ? `${uuidOutput.split('\n').length} 条` : undefined}
+        />
+      </ToolSection>
+
+      <ToolSection
+        title="安全随机密码生成器"
+        description="使用 Web Crypto 均匀取样，并确保至少包含大小写字母、数字与符号。"
+      >
+        <div className="tool-field">
+          <label htmlFor="password-length">密码长度</label>
+          <input
+            id="password-length"
             type="number"
-            className="form-control" 
-            value={pwdLength}
-            onChange={(e) => setPwdLength(parseInt(e.target.value) || 0)}
-            min="4"
-            max="128"
+            inputMode="numeric"
+            value={passwordLength}
+            onChange={(event) => {
+              setPasswordLength(event.currentTarget.value)
+              setPasswordFeedback(null)
+            }}
+            min={PASSWORD_MIN_LENGTH}
+            max={PASSWORD_MAX_LENGTH}
+            step="1"
+            aria-describedby="password-length-hint"
+            aria-invalid={passwordFeedback?.tone === 'error'}
           />
+          <small id="password-length-hint">
+            支持 {PASSWORD_MIN_LENGTH}–{PASSWORD_MAX_LENGTH} 位；默认排除 0/O、1/l/I 等易混淆字符。
+          </small>
         </div>
-        <div className="button-group">
-          <button className="btn" onClick={handleGeneratePassword}>生成随机密码</button>
-        </div>
-        {pwdOutput && (
-          <div className="result-box" style={{ fontSize: '1.25rem', letterSpacing: '2px', textAlign: 'center' }}>
-            {pwdOutput}
-          </div>
-        )}
-      </div>
-    </div>
-  );
+
+        <ToolActions
+          copyText={passwordOutput}
+          copyLabel="复制密码"
+          copySuccessMessage="密码已复制到剪贴板。"
+          onClear={() => {
+            setPasswordOutput('')
+            setPasswordFeedback(null)
+          }}
+          clearLabel="清空密码"
+          clearDisabled={!passwordOutput}
+          clearSuccessMessage="密码结果已清空。"
+          onExample={() => {
+            setPasswordLength('24')
+            setPasswordOutput('')
+            setPasswordFeedback(null)
+          }}
+          exampleLabel="密码示例"
+          exampleSuccessMessage="示例长度 24 已填入。"
+        >
+          <button type="button" className="tool-action-button" onClick={handleGeneratePassword}>
+            <KeyRound aria-hidden="true" size={17} />
+            生成密码
+          </button>
+        </ToolActions>
+
+        <ToolFeedback feedback={passwordFeedback} />
+        <ToolOutput
+          id="password-output"
+          label="密码结果"
+          value={passwordOutput}
+          emptyMessage="设置长度后生成安全随机密码。"
+          sensitive
+          meta={passwordOutput ? `${passwordOutput.length} 位` : undefined}
+        />
+      </ToolSection>
+    </ToolShell>
+  )
 }

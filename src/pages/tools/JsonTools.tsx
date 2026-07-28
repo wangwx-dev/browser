@@ -1,5 +1,5 @@
-import { useState, useRef } from 'react';
-import Editor from '@monaco-editor/react';
+import { useState } from 'react';
+import { CodeEditor } from '../../components/tools/CodeEditor';
 import yaml from 'yaml';
 import JsonToTS from 'json-to-ts';
 import { JSONPath } from 'jsonpath-plus';
@@ -10,19 +10,9 @@ export default function JsonTools() {
   const [errorMsg, setErrorMsg] = useState('');
   const [jsonPathQuery, setJsonPathQuery] = useState('$.hello');
 
-  const editorRef = useRef<any>(null);
-
-  const handleEditorDidMount = (editor: any) => {
-    editorRef.current = editor;
-  };
-
-  const getInputValue = () => {
-    return editorRef.current ? editorRef.current.getValue() : inputContent;
-  };
-
   const formatJson = () => {
     try {
-      const val = getInputValue();
+      const val = inputContent;
       const parsed = JSON.parse(val);
       setOutputContent(JSON.stringify(parsed, null, 2));
       setErrorMsg('');
@@ -33,7 +23,7 @@ export default function JsonTools() {
 
   const jsonToYaml = () => {
     try {
-      const val = getInputValue();
+      const val = inputContent;
       const parsed = JSON.parse(val);
       setOutputContent(yaml.stringify(parsed));
       setErrorMsg('');
@@ -44,7 +34,7 @@ export default function JsonTools() {
 
   const yamlToJson = () => {
     try {
-      const val = getInputValue();
+      const val = inputContent;
       const parsed = yaml.parse(val);
       setOutputContent(JSON.stringify(parsed, null, 2));
       setErrorMsg('');
@@ -55,7 +45,7 @@ export default function JsonTools() {
 
   const generateTsInterface = () => {
     try {
-      const val = getInputValue();
+      const val = inputContent;
       const parsed = JSON.parse(val);
       const interfaces = JsonToTS(parsed).join('\n\n');
       setOutputContent(interfaces);
@@ -67,7 +57,7 @@ export default function JsonTools() {
 
   const executeJsonPath = () => {
     try {
-      const val = getInputValue();
+      const val = inputContent;
       const parsed = JSON.parse(val);
       const result = JSONPath({ path: jsonPathQuery, json: parsed });
       setOutputContent(JSON.stringify(result, null, 2));
@@ -83,27 +73,24 @@ export default function JsonTools() {
         <h1>JSON / YAML 专业工具</h1>
       </div>
 
-      <div style={{ display: 'flex', gap: '1rem', height: 'calc(100vh - 200px)' }}>
+      <div className="code-tool-comparison">
         {/* Left pane: Input */}
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', background: 'var(--glass-bg)', borderRadius: '16px', overflow: 'hidden', border: '1px solid var(--glass-border)' }}>
-          <div style={{ padding: '1rem', borderBottom: '1px solid var(--glass-border)', background: 'rgba(0,0,0,0.2)' }}>
-            <h3 style={{ margin: 0, fontSize: '1rem' }}>输入 (JSON / YAML)</h3>
+        <div className="code-tool-panel">
+          <div className="code-tool-panel-header">
+            <h2>输入 (JSON / YAML)</h2>
           </div>
-          <div style={{ flex: 1 }}>
-            <Editor
-              height="100%"
-              defaultLanguage="json"
-              theme="vs-dark"
+          <div className="code-tool-editor">
+            <CodeEditor
+              ariaLabel="JSON 或 YAML 输入"
+              language="json / yaml"
               value={inputContent}
-              onChange={(val) => setInputContent(val || '')}
-              onMount={handleEditorDidMount}
-              options={{ minimap: { enabled: false }, fontSize: 14 }}
+              onChange={setInputContent}
             />
           </div>
         </div>
 
         {/* Center pane: Actions */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', justifyContent: 'center', minWidth: '160px' }}>
+        <div className="code-tool-actions code-tool-actions-stacked">
           <button className="btn" onClick={formatJson}>JSON 格式化 ➔</button>
           <button className="btn" onClick={jsonToYaml}>JSON 转 YAML ➔</button>
           <button className="btn" onClick={yamlToJson}>YAML 转 JSON ➔</button>
@@ -126,17 +113,16 @@ export default function JsonTools() {
         </div>
 
         {/* Right pane: Output */}
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', background: 'var(--glass-bg)', borderRadius: '16px', overflow: 'hidden', border: '1px solid var(--glass-border)' }}>
-          <div style={{ padding: '1rem', borderBottom: '1px solid var(--glass-border)', background: 'rgba(0,0,0,0.2)' }}>
-            <h3 style={{ margin: 0, fontSize: '1rem' }}>输出结果</h3>
+        <div className="code-tool-panel">
+          <div className="code-tool-panel-header">
+            <h2>输出结果</h2>
           </div>
-          <div style={{ flex: 1 }}>
-            <Editor
-              height="100%"
-              defaultLanguage="typescript"
-              theme="vs-dark"
+          <div className="code-tool-editor">
+            <CodeEditor
+              ariaLabel="转换结果"
+              language="result"
               value={outputContent}
-              options={{ minimap: { enabled: false }, fontSize: 14, readOnly: true }}
+              readOnly
             />
           </div>
         </div>

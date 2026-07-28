@@ -1,91 +1,160 @@
-import React, { useState } from 'react';
-import { NavLink } from 'react-router-dom';
-import { 
-  Compass, 
-  Code2, 
-  FileJson, 
-  Clock, 
-  BookOpen, 
-  TerminalSquare, 
-  Database,
-  Hash,
+import {
+  BookOpen,
   Box,
-  Search,
+  ChevronLeft,
+  ChevronRight,
+  Clock,
+  Code2,
+  Columns2,
+  Compass,
+  Database,
+  FileJson,
   Globe,
-  ShieldAlert,
+  Hash,
+  Home,
+  Image,
+  LogOut,
   Repeat,
+  ShieldAlert,
+  TerminalSquare,
   Type,
-  Image as ImageIcon
-} from 'lucide-react';
+  UserRound,
+  X,
+  type LucideIcon,
+} from 'lucide-react'
+import { NavLink } from 'react-router-dom'
 
-const TOOLS_CONFIG = [
-  { path: '/', name: '网站导航', icon: Compass, group: '导航' },
-  { path: '/tools/network', name: '网络与 IP', icon: Globe, group: '网络工具' },
-  
-  { path: '/tools/security', name: '证书与 RSA 密钥', icon: ShieldAlert, group: '安全与加解密' },
-  { path: '/tools/crypto', name: 'Hash & Bcrypt', icon: Hash, group: '安全与加解密' },
-  
-  { path: '/tools/converter', name: '全能转换器 (SQL/Base)', icon: Repeat, group: '格式化与转换' },
-  { path: '/tools/json', name: 'JSON / YAML 专业版', icon: FileJson, group: '格式化与转换' },
-  { path: '/tools/docker', name: 'Docker 到 Compose', icon: Box, group: '格式化与转换' },
-  
-  { path: '/tools/text', name: '文本手术刀', icon: Type, group: '文本处理' },
-  { path: '/tools/diff', name: '代码 Diff 对比', icon: FileJson, group: '文本处理' },
-  { path: '/tools/encode', name: 'URL / Base64 / JWT', icon: Code2, group: '文本处理' },
-  
-  { path: '/tools/time', name: 'Cron & 时间戳', icon: Clock, group: '时间与开发辅助' },
-  { path: '/tools/data', name: 'Mock数据 & UUID', icon: Database, group: '时间与开发辅助' },
-  { path: '/tools/cheatsheets', name: '命令备忘录', icon: BookOpen, group: '时间与开发辅助' },
-  
-  { path: '/tools/media', name: '多媒体与二维码', icon: ImageIcon, group: '图像与多媒体' },
-];
+import { TOOL_REGISTRY } from '../config/tools'
 
-export const Sidebar: React.FC = () => {
-  const [searchTerm, setSearchTerm] = useState('');
+const ICONS: Record<string, LucideIcon> = {
+  'book-open': BookOpen,
+  box: Box,
+  clock: Clock,
+  'code-2': Code2,
+  'columns-2': Columns2,
+  database: Database,
+  'file-json': FileJson,
+  globe: Globe,
+  hash: Hash,
+  image: Image,
+  repeat: Repeat,
+  'shield-alert': ShieldAlert,
+  type: Type,
+}
 
-  const filteredTools = TOOLS_CONFIG.filter(tool => 
-    tool.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-    tool.group.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+interface SidebarProps {
+  collapsed?: boolean
+  mobileOpen?: boolean
+  userEmail?: string
+  onCloseMobile?: () => void
+  onToggleCollapsed?: () => void
+  onSignOut?: () => void | Promise<void>
+}
 
-  // Maintain original order of groups
-  const groups = Array.from(new Set(TOOLS_CONFIG.map(t => t.group))).filter(g => filteredTools.some(t => t.group === g));
+export function Sidebar({
+  collapsed = false,
+  mobileOpen = false,
+  userEmail,
+  onCloseMobile,
+  onToggleCollapsed,
+  onSignOut,
+}: SidebarProps) {
+  const groups = Array.from(new Set(TOOL_REGISTRY.map((tool) => tool.category)))
+  const closeAfterNavigation = () => onCloseMobile?.()
 
   return (
-    <aside className="sidebar">
-      <div className="sidebar-header">
-        <TerminalSquare className="w-6 h-6 text-sky-400" />
-        <span>DevTools Max</span>
-      </div>
-      
-      <div className="sidebar-search">
-        <Search size={16} className="search-icon" />
-        <input 
-          type="text" 
-          placeholder="搜索工具..." 
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-        />
-      </div>
+    <>
+      <button
+        type="button"
+        className={`sidebar-overlay ${mobileOpen ? 'visible' : ''}`}
+        aria-label="关闭导航菜单"
+        onClick={onCloseMobile}
+      />
+      <aside className={`sidebar ${collapsed ? 'collapsed' : ''} ${mobileOpen ? 'mobile-open' : ''}`}>
+        <div className="sidebar-header">
+          <TerminalSquare aria-hidden="true" size={24} />
+          <span className="sidebar-label">Dev Workbench</span>
+          <button
+            type="button"
+            className="sidebar-mobile-close"
+            aria-label="关闭导航菜单"
+            onClick={onCloseMobile}
+          >
+            <X aria-hidden="true" size={22} />
+          </button>
+        </div>
 
-      <nav className="sidebar-nav">
-        {groups.map(group => (
-          <div key={group} className="sidebar-group">
-            <div className="sidebar-group-title">{group}</div>
-            {filteredTools.filter(t => t.group === group).map(tool => (
-              <NavLink key={tool.path} to={tool.path} className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`} end={tool.path === '/'}>
-                <tool.icon size={18} />
-                <span>{tool.name}</span>
-              </NavLink>
+        <nav className="sidebar-nav" aria-label="工作台主导航">
+          <div className="sidebar-primary-links">
+            <NavLink
+              to="/"
+              end
+              title={collapsed ? '首页' : undefined}
+              className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
+              onClick={closeAfterNavigation}
+            >
+              <Home aria-hidden="true" size={19} />
+              <span className="sidebar-label">首页</span>
+            </NavLink>
+            <NavLink
+              to="/navigation"
+              title={collapsed ? '我的导航' : undefined}
+              className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
+              onClick={closeAfterNavigation}
+            >
+              <Compass aria-hidden="true" size={19} />
+              <span className="sidebar-label">我的导航</span>
+            </NavLink>
+          </div>
+
+          <div className="sidebar-tools-scroll">
+            {groups.map((group) => (
+              <div key={group} className="sidebar-group">
+                <div className="sidebar-group-title">{group}</div>
+                {TOOL_REGISTRY.filter((tool) => tool.category === group).map((tool) => {
+                  const Icon = ICONS[tool.iconKey] ?? TerminalSquare
+                  return (
+                    <NavLink
+                      key={tool.id}
+                      to={tool.path}
+                      title={collapsed ? tool.title : undefined}
+                      className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
+                      onClick={closeAfterNavigation}
+                    >
+                      <Icon aria-hidden="true" size={19} />
+                      <span className="sidebar-label">{tool.title}</span>
+                    </NavLink>
+                  )
+                })}
+              </div>
             ))}
           </div>
-        ))}
-        {filteredTools.length === 0 && (
-          <div style={{ padding: '1rem', color: '#64748b', fontSize: '0.875rem', textAlign: 'center' }}>
-            未找到工具
+        </nav>
+
+        <div className="sidebar-footer">
+          <div className="sidebar-account" title={userEmail}>
+            <UserRound aria-hidden="true" size={19} />
+            <span className="sidebar-label">{userEmail || '个人工作台'}</span>
           </div>
-        )}
-      </nav>
-    </aside>
-  );
-};
+          <button type="button" className="nav-item sidebar-signout" onClick={onSignOut}>
+            <LogOut aria-hidden="true" size={19} />
+            <span className="sidebar-label">退出登录</span>
+          </button>
+          <button
+            type="button"
+            className="sidebar-collapse"
+            aria-label={collapsed ? '展开侧栏' : '折叠侧栏'}
+            onClick={onToggleCollapsed}
+          >
+            {collapsed ? (
+              <ChevronRight aria-hidden="true" size={19} />
+            ) : (
+              <ChevronLeft aria-hidden="true" size={19} />
+            )}
+            <span className="sidebar-label">折叠侧栏</span>
+          </button>
+        </div>
+      </aside>
+    </>
+  )
+}

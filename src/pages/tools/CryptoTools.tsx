@@ -33,7 +33,7 @@ export default function CryptoTools() {
     try {
       const isValid = bcrypt.compareSync(bcryptInput, bcryptHashToVerify);
       setBcryptVerifyResult(isValid);
-    } catch (e) {
+    } catch {
       setBcryptVerifyResult(false);
     }
   };

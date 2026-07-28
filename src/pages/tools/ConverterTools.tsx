@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import Editor from '@monaco-editor/react';
+import { CodeEditor } from '../../components/tools/CodeEditor';
 import { format as formatSql } from 'sql-formatter';
 
 export default function ConverterTools() {
@@ -41,7 +41,7 @@ export default function ConverterTools() {
         <h1>万能转换器 (Converters)</h1>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '2rem' }}>
+      <div className="converter-tools-grid">
         
         {/* Base Converter */}
         <div className="tool-card" style={{ display: 'flex', flexDirection: 'column' }}>
@@ -104,29 +104,26 @@ export default function ConverterTools() {
             </select>
           </div>
 
-          <div style={{ display: 'flex', gap: '1rem', height: '300px', marginTop: '1rem' }}>
-            <div style={{ flex: 1, border: '1px solid var(--glass-border)', borderRadius: '8px', overflow: 'hidden' }}>
-              <Editor
-                height="100%"
-                defaultLanguage="sql"
-                theme="vs-dark"
+          <div className="code-tool-comparison code-tool-comparison-compact">
+            <div className="code-tool-editor">
+              <CodeEditor
+                ariaLabel="SQL 输入"
+                language="sql"
                 value={sqlInput}
-                onChange={(val) => setSqlInput(val || '')}
-                options={{ minimap: { enabled: false } }}
+                onChange={setSqlInput}
               />
             </div>
             
-            <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+            <div className="code-tool-actions">
               <button className="btn" onClick={formatSqlCode}>格式化 ➔</button>
             </div>
 
-            <div style={{ flex: 1, border: '1px solid var(--glass-border)', borderRadius: '8px', overflow: 'hidden' }}>
-              <Editor
-                height="100%"
-                defaultLanguage="sql"
-                theme="vs-dark"
+            <div className="code-tool-editor">
+              <CodeEditor
+                ariaLabel="格式化后的 SQL"
+                language="sql"
                 value={sqlOutput}
-                options={{ minimap: { enabled: false }, readOnly: true }}
+                readOnly
               />
             </div>
           </div>

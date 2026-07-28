@@ -1,17 +1,30 @@
-name: Deploy to Cloudflare Pages
+name: Quality gate and deploy to Cloudflare Pages
 
 on:
   push:
     branches:
       - main
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: cloudflare-pages-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  VITE_SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL }}
+  VITE_SUPABASE_ANON_KEY: ${{ vars.VITE_SUPABASE_ANON_KEY }}
+  VITE_ALLOW_SIGN_UP: 'false'
+  # Phase A is deliberately read-only until the schema, uniqueness and RLS
+  # release gates have been verified against a non-production copy.
+  VITE_ENABLE_NAV_V2_WRITE: 'false'
 
 jobs:
-  deploy:
+  quality:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      deployments: write
-    name: Deploy to Cloudflare Pages
+    name: Test and build
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -19,19 +32,93 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
+          cache: npm
 
       - name: Install dependencies
         run: npm ci
 
+      - name: Lint
+        run: npm run lint
+
+      - name: Test with coverage gate
+        run: npm run coverage
+
+      - name: Audit production dependencies
+        run: npm audit --omit=dev --audit-level=critical
+
+      - name: Validate production public configuration
+        if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+        shell: bash
+        run: |
+          [[ "$VITE_SUPABASE_URL" == https://* ]] || {
+            echo "VITE_SUPABASE_URL must be a configured HTTPS repository variable."
+            exit 1
+          }
+          [[ -n "$VITE_SUPABASE_ANON_KEY" && "$VITE_SUPABASE_ANON_KEY" != sb_secret_* ]] || {
+            echo "VITE_SUPABASE_ANON_KEY must be a public browser key, never a secret key."
+            exit 1
+          }
+          node <<'NODE'
+          const key = process.env.VITE_SUPABASE_ANON_KEY ?? ''
+          const segments = key.split('.')
+          let role
+          if (segments.length === 3) {
+            try {
+              role = JSON.parse(Buffer.from(segments[1], 'base64url').toString('utf8')).role
+            } catch {
+              // New publishable keys and malformed legacy values have no JWT role claim.
+            }
+          }
+          if (role === 'service_role') {
+            console.error('VITE_SUPABASE_ANON_KEY must never contain a service_role JWT.')
+            process.exit(1)
+          }
+          NODE
+
       - name: Build
         run: npm run build
 
+      - name: Upload Pages artifact
+        if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+        uses: actions/upload-artifact@v4
+        with:
+          name: cloudflare-pages-dist
+          path: dist
+          if-no-files-found: error
+          retention-days: 1
+
+  deploy:
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    needs: quality
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      deployments: write
+    environment:
+      name: production
+      url: ${{ steps.deploy.outputs.deployment-url }}
+    name: Deploy production
+    steps:
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Download Pages artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: cloudflare-pages-dist
+          path: dist
+
       - name: Deploy to Cloudflare Pages
-        uses: cloudflare/pages-action@v1
+        id: deploy
+        # v4.0.0; pin the reviewed action commit instead of a mutable tag.
+        uses: cloudflare/wrangler-action@ebbaa1584979971c8614a24965b4405ff95890e0
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          projectName: 'browser-navigation'
-          directory: 'dist'
+          wranglerVersion: '4.114.0'
+          command: pages deploy dist --project-name=browser-navigation --branch=main
           gitHubToken: ${{ secrets.GITHUB_TOKEN }}

@@ -37,7 +37,7 @@ export default function NetworkTools() {
     if (ip && maskStr) {
       subnetInfo = calculateSubnet(ip, parseInt(maskStr, 10));
     }
-  } catch (e) {}
+  } catch {}
 
   return (
     <div className="page-container" style={{ maxWidth: '100%' }}>
@@ -45,7 +45,7 @@ export default function NetworkTools() {
         <h1>网络与 IP 工具</h1>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '2rem' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 22rem), 1fr))', gap: '2rem' }}>
         
         {/* CIDR Calculator */}
         <div className="tool-card" style={{ display: 'flex', flexDirection: 'column' }}>
