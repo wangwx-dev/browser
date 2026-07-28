@@ -1,8 +1,8 @@
 # Dev Workbench
 
-一个面向个人使用的开发工作台：把常用网站导航、收藏、最近使用和日常开发工具集中到一个响应式 Web 应用中。前端部署在 Cloudflare Pages，认证和导航数据读取由 Supabase 提供。
+一个面向个人使用的开发工作台：把常用网站导航、收藏、最近使用和日常开发工具集中到一个响应式 Web 应用中。前端部署在 Cloudflare Workers Static Assets，认证和导航数据读取由 Supabase 提供。
 
-> 当前仓库完成的是代码重构与本地质量建设，不代表已经验证生产 Supabase、生产 RLS 或 Cloudflare 线上部署。导航远端写入和公开注册默认关闭。
+> 导航远端写入和公开注册默认关闭。生产 Supabase schema、RLS 和后台注册策略仍需独立核验。
 
 ## 主要功能
 
@@ -24,7 +24,7 @@
 | 领域逻辑 | 强类型 `NavConfigV2`、旧导航数据适配、搜索评分、导航变更与冲突状态 |
 | 本地持久化 | IndexedDB 数据库 `dev-workbench`，保存工作区草稿、UI 偏好和冲突备份 |
 | 远端服务 | Supabase Auth 与 `user_nav_configs`；读取默认可用，写入受独立开关保护 |
-| 托管 | Cloudflare Pages 静态站点；无顶层 `404.html` 时使用 Pages 原生 SPA fallback，`public/_headers` 提供 CSP 与安全响应头，`wrangler.jsonc` 固定本地/CI 兼容日期 |
+| 托管 | Cloudflare Workers Static Assets；`wrangler.jsonc` 声明 `dist` 资产目录和 SPA fallback，`public/_headers` 提供 CSP、安全头与缓存策略 |
 | 质量门禁 | Oxlint、Vitest、Testing Library、TypeScript 构建、生产依赖审计 |
 
 应用没有自建服务端代理。浏览器只应持有 Supabase 的公开 anon/publishable key，绝不能放入 `service_role` 或 `sb_secret_...` 密钥。
@@ -99,25 +99,24 @@ npm audit --omit=dev
 4. 备份现有数据并制定回滚方案。
 5. 通过评审后，才在目标构建中将 `VITE_ENABLE_NAV_V2_WRITE` 改为 `true`。
 
-当前 GitHub Actions 工作流把 `VITE_ENABLE_NAV_V2_WRITE` 固定为 `false`，因此仅修改 Cloudflare/GitHub 变量不会开启生产写入。这个保护应在上述证据齐备后通过一次独立、可审查的代码变更解除。
+应用默认把 `VITE_ENABLE_NAV_V2_WRITE` 视为 `false`，Cloudflare 当前也未配置该变量，因此仅修改 Supabase 公开配置不会开启生产写入。这个保护应在上述证据齐备后通过一次独立、可审查的配置变更解除。
 
 ### 私人站点的注册设置
 
 `VITE_ALLOW_SIGN_UP=false` 只隐藏前端注册入口，**不是安全边界**。自用部署还必须在 Supabase Dashboard 的 Auth 设置中关闭公开注册，并确认只保留自己的账号。若 Supabase 后台仍允许注册，隐藏按钮不能阻止他人直接调用公开认证 API。
 
-## Cloudflare Pages 部署
+## Cloudflare Workers 部署
 
-仓库已提供 `.github/workflows/cloudflare-pages.yml`：Pull Request 运行质量门禁，推送到 `main` 在门禁通过后构建并部署 `dist`。默认 Pages 项目名为 `browser-navigation`；若实际项目名不同，应先修改工作流中的 `--project-name`。
+生产项目 `browser` 已通过 Cloudflare Workers Builds 连接本仓库。推送到 `main` 后，Cloudflare 自动执行 `npm run build` 和 `npx wrangler deploy`；`wrangler.jsonc` 将 `dist` 作为静态资产目录，并对未知路径启用 SPA fallback。
 
-在 GitHub 仓库配置：
+Cloudflare 构建环境需要配置以下公开变量：
 
-- Repository variables：`VITE_SUPABASE_URL`、`VITE_SUPABASE_ANON_KEY`
-- Repository secrets：`CLOUDFLARE_API_TOKEN`、`CLOUDFLARE_ACCOUNT_ID`
-- 可选但建议：为 `production` environment 配置保护规则
+- `VITE_SUPABASE_URL`
+- `VITE_SUPABASE_ANON_KEY`
 
-Cloudflare API Token 只授予部署该 Pages 项目所需的最小权限。工作流使用 Node 22 和 Wrangler，将 `dist` 发布到 `main` 分支对应的生产环境。
+GitHub Actions 只运行 lint、覆盖率、依赖审计和生产构建，不持有 Cloudflare API Token，也不重复部署。这样 Cloudflare 的 Git 集成是唯一生产发布入口，发布记录和回滚版本都保留在同一个 Worker 项目内。
 
-首次上线和每次安全头变更后，仍需在真实 Pages 域名验证：
+首次上线和每次安全头变更后，仍需在真实 Workers 域名验证：
 
 - `/navigation`、`/tools/json` 等深链刷新能返回 SPA，而不是 404。
 - `_headers` 中的 CSP、安全响应头和缓存策略实际生效。
@@ -142,6 +141,6 @@ Cloudflare API Token 只授予部署该 Pages 项目所需的最小权限。工�
 - `user_id` 唯一约束、字段类型、外键和 `updated_at` 行为尚未从目标 Supabase 得到证据。
 - RLS 的匿名拒绝和双用户隔离尚未在目标 Supabase 验证。
 - Supabase 后台是否已关闭公开注册尚未验证。
-- Cloudflare Pages 的生产部署、深链和响应头尚未在真实域名验证。
+- Cloudflare Workers 的生产部署、深链和响应头应在每次发布后持续验证。
 
 更详细的实施状态与发布门禁见 `.boss/dev-workbench-refactor/tasks.md` 和 `.boss/dev-workbench-refactor/tech-review.md`。

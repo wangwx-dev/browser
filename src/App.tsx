@@ -15,7 +15,7 @@ function ConfigurationError() {
       <section className="tool-card" role="alert">
         <h1>Supabase 配置不可用</h1>
         <p>
-          请在 Cloudflare Pages 环境变量中配置有效的 <code>VITE_SUPABASE_URL</code> 与公开客户端密钥，
+          请在 Cloudflare Workers 构建变量中配置有效的 <code>VITE_SUPABASE_URL</code> 与公开客户端密钥，
           然后重新部署。
         </p>
         <p className="configuration-hint">

@@ -106,7 +106,7 @@ function PublicAuthRoute() {
       <main className="route-state" role="alert">
         <h1>Supabase 配置不可用</h1>
         <p>
-          请在 Cloudflare Pages 中配置有效的 <code>VITE_SUPABASE_URL</code> 与浏览器公开密钥后重新部署。
+          请在 Cloudflare Workers 构建变量中配置有效的 <code>VITE_SUPABASE_URL</code> 与浏览器公开密钥后重新部署。
         </p>
         <p>当前页面不会尝试连接占位地址，也不会输出任何密钥内容。</p>
       </main>
