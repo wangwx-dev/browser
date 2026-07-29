@@ -5,31 +5,25 @@
 
 .tool-shell.page-container {
   width: 100%;
-  max-width: 1380px;
+  max-width: 1320px;
   gap: 20px;
   color: var(--color-text);
 }
 
 .tool-shell button,
-.tool-shell input {
+.tool-shell input,
+.tool-shell textarea,
+.tool-shell select {
   font: inherit;
 }
 
 .tool-shell-header {
-  position: relative;
-  isolation: isolate;
   display: flex;
-  align-items: center;
+  align-items: flex-end;
   justify-content: space-between;
   gap: 24px;
-  padding: 24px;
-  overflow: hidden;
-  border: 1px solid rgba(129, 140, 248, 0.18);
-  border-radius: var(--radius-xl);
-  background:
-    radial-gradient(circle at 92% -40%, rgba(99, 102, 241, 0.24), transparent 22rem),
-    linear-gradient(135deg, rgba(18, 29, 51, 0.92), rgba(11, 19, 35, 0.88));
-  box-shadow: var(--shadow-card), inset 0 1px rgba(255, 255, 255, 0.04);
+  padding: 0 0 20px;
+  border-bottom: 1px solid var(--color-border-subtle);
 }
 
 .tool-shell-heading {
@@ -48,17 +42,16 @@
 }
 
 .tool-shell-eyebrow {
-  color: #7dd3fc;
-  font-size: 0.69rem;
+  color: var(--color-accent);
+  font-size: 0.7rem;
   font-weight: 750;
-  letter-spacing: 0.14em;
+  letter-spacing: 0.1em;
 }
 
 .tool-shell-heading h1 {
   color: var(--color-text);
-  font-size: clamp(1.55rem, 3vw, 2rem);
+  font-size: clamp(1.5rem, 3vw, 1.9rem);
   line-height: 1.2;
-  letter-spacing: -0.03em;
 }
 
 .tool-shell-heading > p:last-child:not(.tool-shell-eyebrow) {
@@ -76,10 +69,10 @@
   max-width: 340px;
   min-height: 40px;
   padding: 9px 12px;
-  border: 1px solid rgba(74, 222, 128, 0.25);
-  border-radius: 999px;
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-md);
   color: var(--color-text-secondary);
-  background: rgba(52, 211, 153, 0.07);
+  background: var(--color-surface);
   font-size: 0.78rem;
   line-height: 1.45;
 }
@@ -100,10 +93,10 @@
   display: grid;
   gap: 18px;
   padding: 20px;
-  border: 1px solid rgba(148, 163, 184, 0.12);
-  border-radius: 20px;
-  background: linear-gradient(145deg, rgba(16, 26, 46, 0.84), rgba(10, 17, 31, 0.78));
-  box-shadow: inset 0 1px rgba(255, 255, 255, 0.025), 0 12px 34px rgba(0, 0, 0, 0.1);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  box-shadow: none;
 }
 
 .tool-shell-section-header {
@@ -142,12 +135,12 @@
   width: 100%;
   min-height: var(--control-md);
   padding: 9px 11px;
-  border: 1px solid rgba(148, 163, 184, 0.22);
+  border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
   outline: 0;
   color: var(--color-text);
-  background: rgba(4, 9, 20, 0.58);
-  transition: border-color var(--motion-fast), box-shadow var(--motion-fast), background var(--motion-fast);
+  background: var(--color-bg);
+  transition: border-color var(--motion-fast), box-shadow var(--motion-fast), background-color var(--motion-fast);
 }
 
 .tool-field textarea {
@@ -158,21 +151,20 @@
 .tool-field input::placeholder,
 .tool-field textarea::placeholder {
   color: var(--color-text-muted);
-  opacity: 0.72;
+  opacity: 0.75;
 }
 
 .tool-field input:hover,
 .tool-field textarea:hover,
 .tool-field select:hover {
-  border-color: rgba(148, 163, 184, 0.32);
+  border-color: #465064;
 }
 
 .tool-field input:focus,
 .tool-field textarea:focus,
 .tool-field select:focus {
-  border-color: rgba(125, 211, 252, 0.52);
-  background: rgba(4, 9, 20, 0.78);
-  box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.09);
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
 }
 
 .tool-field input[aria-invalid="true"],
@@ -206,28 +198,25 @@
   gap: 7px;
   min-height: var(--control-md);
   padding: 9px 13px;
-  border: 1px solid rgba(129, 140, 248, 0.48);
+  border: 1px solid var(--color-primary);
   border-radius: var(--radius-md);
   color: white;
-  background: linear-gradient(135deg, #6366f1, #4f7ee8);
-  box-shadow: 0 9px 22px rgba(79, 70, 229, 0.18), inset 0 1px rgba(255, 255, 255, 0.14);
+  background: var(--color-primary);
+  box-shadow: none;
   cursor: pointer;
-  transition: background var(--motion-fast), border-color var(--motion-fast), transform var(--motion-fast);
+  transition: background-color var(--motion-fast), border-color var(--motion-fast);
 }
 
 .tool-action-button:hover:not(:disabled) {
-  border-color: rgba(165, 180, 252, 0.62);
-  background: linear-gradient(135deg, #7477ff, #5b8df2);
-  transform: translateY(-1px);
-  box-shadow: 0 12px 28px rgba(79, 70, 229, 0.24), inset 0 1px rgba(255, 255, 255, 0.17);
+  border-color: var(--color-primary-hover);
+  background: var(--color-primary-hover);
 }
 
 .tool-action-button-secondary,
 .tool-action-button-quiet {
-  border-color: rgba(148, 163, 184, 0.2);
+  border-color: var(--color-border);
   color: var(--color-text-secondary);
-  background: rgba(148, 163, 184, 0.06);
-  box-shadow: none;
+  background: transparent;
 }
 
 .tool-action-button-secondary:hover:not(:disabled),
@@ -296,10 +285,9 @@
   gap: 8px;
   min-height: 142px;
   padding: 13px;
-  border: 1px solid rgba(148, 163, 184, 0.12);
-  border-radius: 14px;
-  background: rgba(3, 7, 18, 0.58);
-  box-shadow: inset 0 1px rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-md);
+  background: var(--color-bg);
 }
 
 .tool-output-heading {
@@ -343,7 +331,7 @@
 
 @media (max-width: 900px) {
   .tool-shell-header {
-    align-items: stretch;
+    align-items: flex-start;
     flex-direction: column;
   }
 
@@ -372,6 +360,10 @@
     padding: 16px;
   }
 
+  .tool-shell-header {
+    padding: 0 0 16px;
+  }
+
   .tool-actions {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -389,7 +381,10 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .tool-action-button {
-    transition-duration: 1ms;
+  .tool-action-button,
+  .tool-field input,
+  .tool-field textarea,
+  .tool-field select {
+    transition: none;
   }
 }

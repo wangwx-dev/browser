@@ -8,7 +8,6 @@ import { useAuth } from './contexts/useAuth'
 import { openCommandPalette } from './domain/command-palette'
 import { isSupabaseConfigured } from './lib/supabase'
 import './App.css'
-import './visual-refresh.css'
 
 function ConfigurationError() {
   return (
