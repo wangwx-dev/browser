@@ -174,7 +174,7 @@
   display: flex;
   align-items: center;
   gap: 9px;
-  min-height: 40px;
+  min-height: 44px;
   padding: 8px 10px;
   border: 0;
   border-radius: 7px;
@@ -209,7 +209,7 @@
 
 .link-card-category-select select {
   width: 100%;
-  min-height: 36px;
+  min-height: 44px;
   padding-inline: 8px;
   border: 1px solid var(--color-border, #334155);
   border-radius: 7px;

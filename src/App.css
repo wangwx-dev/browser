@@ -103,13 +103,14 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 1rem 2rem;
-  background: var(--glass-bg);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border: 1px solid var(--glass-border);
-  border-radius: 16px;
-  box-shadow: var(--glass-shadow);
+  padding: 0 0 20px;
+  background: transparent;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  border: 0;
+  border-bottom: 1px solid var(--glass-border);
+  border-radius: 0;
+  box-shadow: none;
 }
 
 .spin {
@@ -579,7 +580,9 @@ textarea.form-control {
   border-radius: 5px;
   color: #cbd5e1;
   background: var(--color-bg, #0b0d12);
-  font: 0.7rem/1.4 inherit;
+  font-family: inherit;
+  font-size: 0.7rem;
+  line-height: 1.4;
 }
 
 .sync-trigger {
@@ -674,6 +677,8 @@ textarea.form-control {
   }
 
   .sidebar.mobile-open .sidebar-mobile-close {
+    width: 44px;
+    height: 44px;
     display: inline-grid;
     place-items: center;
     flex: 0 0 auto;
@@ -872,7 +877,9 @@ textarea.form-control {
     border-radius: 8px;
     color: #94a3b8;
     background: transparent;
-    font: 0.68rem/1.1 inherit;
+    font-family: inherit;
+    font-size: 0.68rem;
+    line-height: 1.1;
   }
 
   .mobile-nav .active {
@@ -1150,7 +1157,7 @@ body {
 }
 
 .favorite-grid {
-  grid-template-columns: repeat(auto-fit, minmax(148px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
 }
 
 .tool-grid,
@@ -1782,7 +1789,7 @@ body {
   }
 
   .favorite-grid {
-    grid-template-columns: repeat(auto-fit, minmax(148px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
   }
 
   .tool-grid,
@@ -1875,7 +1882,7 @@ body {
   }
 
   .favorite-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: minmax(0, 1fr);
   }
 
   .tool-grid,
@@ -2652,6 +2659,18 @@ body {
 @keyframes navigation-dialog-in {
   from { opacity: 0; transform: translateY(8px) scale(0.985); }
   to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@media (min-width: 600px) and (max-width: 768px) {
+  .navigation-search button,
+  .navigation-notice button,
+  .category-drag-handle,
+  .site-drag-handle,
+  .navigation-category-actions button,
+  .dialog-close {
+    width: 44px;
+    height: 44px;
+  }
 }
 
 @media (min-width: 600px) and (max-width: 980px) {

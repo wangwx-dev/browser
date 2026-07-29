@@ -7,7 +7,7 @@
   padding:
     calc(72px + env(safe-area-inset-top))
     max(20px, env(safe-area-inset-right))
-    32px
+    calc(32px + env(safe-area-inset-bottom))
     max(20px, env(safe-area-inset-left));
   background:
     radial-gradient(circle at 50% -12rem, rgba(59, 130, 246, .09), transparent 32rem),
@@ -258,7 +258,10 @@
 @media (max-width: 480px) {
   .auth-page {
     place-items: start center;
-    padding: calc(74px + env(safe-area-inset-top)) 14px 24px;
+    padding:
+      calc(74px + env(safe-area-inset-top))
+      14px
+      calc(24px + env(safe-area-inset-bottom));
   }
 
   .auth-brand {
