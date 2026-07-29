@@ -8,6 +8,7 @@ import { useAuth } from './contexts/useAuth'
 import { openCommandPalette } from './domain/command-palette'
 import { isSupabaseConfigured } from './lib/supabase'
 import './App.css'
+import './visual-refresh.css'
 
 function ConfigurationError() {
   return (
@@ -44,7 +45,10 @@ function App() {
         onSignOut={() => signOut()}
       />
       <div className="app-frame">
-        <AppHeader onToggleNavigation={() => setMobileNavigationOpen(true)} />
+        <AppHeader
+          navigationOpen={mobileNavigationOpen}
+          onToggleNavigation={() => setMobileNavigationOpen((value) => !value)}
+        />
         <main className="main-content" id="main-content">
           <Outlet />
         </main>

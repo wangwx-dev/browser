@@ -3,15 +3,22 @@
   min-width: 0;
   min-height: 112px;
   border: 1px solid var(--color-border-subtle, var(--glass-border));
-  border-radius: var(--radius-md, 10px);
-  background: var(--color-surface, var(--glass-bg));
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12);
-  transition: border-color var(--motion-fast, 150ms ease), background var(--motion-fast, 150ms ease), transform var(--motion-fast, 150ms ease);
+  border-radius: var(--radius-lg, 18px);
+  background: linear-gradient(145deg, rgba(20, 32, 54, 0.92), rgba(12, 21, 38, 0.92));
+  box-shadow: inset 0 1px rgba(255, 255, 255, 0.025);
+  transition: border-color var(--motion-fast, 150ms ease), background var(--motion-fast, 150ms ease), box-shadow var(--motion-fast, 150ms ease), transform var(--motion-fast, 150ms ease);
 }
 
 .link-card:hover {
-  border-color: var(--color-border, #334155);
-  background: var(--color-surface-hover, var(--card-hover-bg));
+  border-color: rgba(125, 211, 252, 0.28);
+  background: linear-gradient(145deg, rgba(25, 40, 67, 0.96), rgba(15, 26, 46, 0.96));
+  box-shadow: var(--shadow-card-hover, 0 16px 38px rgba(0, 0, 0, 0.24));
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .link-card:hover {
+    transform: translateY(-2px);
+  }
 }
 
 .link-card.drag-overlay {
@@ -60,9 +67,10 @@
   height: 44px;
   overflow: hidden;
   border: 1px solid var(--color-border-subtle, var(--glass-border));
-  border-radius: var(--radius-md, 10px);
-  color: var(--color-accent, var(--primary-color));
-  background: var(--color-surface-raised, rgba(255, 255, 255, 0.08));
+  border-color: rgba(125, 211, 252, 0.16);
+  border-radius: 13px;
+  color: #7dd3fc;
+  background: linear-gradient(145deg, rgba(99, 102, 241, 0.16), rgba(14, 165, 233, 0.09));
 }
 
 .link-card-icon img {
@@ -136,11 +144,15 @@
 }
 
 .link-card-favorite:hover,
-.link-card-favorite.active,
+.link-card-favorite.active {
+  color: var(--color-warning, #fbbf24);
+  background: rgba(251, 191, 36, 0.09);
+}
+
 .link-card-menu summary:hover,
 .link-card-menu[open] summary {
-  color: var(--color-warning, #fbbf24);
-  background: var(--color-surface-raised, rgba(255, 255, 255, 0.08));
+  color: var(--color-text, #f8fafc);
+  background: rgba(148, 163, 184, 0.1);
 }
 
 .link-card-menu summary {
@@ -161,9 +173,11 @@
   width: min(220px, calc(100vw - 48px));
   padding: 6px;
   border: 1px solid var(--color-border, #334155);
-  border-radius: var(--radius-md, 10px);
-  background: var(--color-surface-raised, #16243a);
+  border-color: rgba(148, 163, 184, 0.22);
+  border-radius: 14px;
+  background: rgba(19, 31, 53, 0.98);
   box-shadow: var(--shadow-float, 0 16px 48px rgba(0, 0, 0, 0.36));
+  backdrop-filter: blur(16px);
 }
 
 .link-card-menu-popover button {
@@ -248,5 +262,9 @@
 @media (prefers-reduced-motion: reduce) {
   .link-card {
     transition-duration: 1ms;
+  }
+
+  .link-card:hover {
+    transform: none;
   }
 }

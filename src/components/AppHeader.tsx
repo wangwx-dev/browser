@@ -6,6 +6,7 @@ import { openCommandPalette } from '../domain/command-palette'
 
 interface AppHeaderProps {
   onToggleNavigation: () => void
+  navigationOpen?: boolean
   syncLabel?: string
   syncTone?: 'neutral' | 'success' | 'warning' | 'danger'
 }
@@ -19,6 +20,7 @@ function titleForPath(pathname: string): string {
 
 export function AppHeader({
   onToggleNavigation,
+  navigationOpen = false,
   syncLabel = '本地草稿',
   syncTone = 'neutral',
 }: AppHeaderProps) {
@@ -29,7 +31,9 @@ export function AppHeader({
       <button
         type="button"
         className="app-header-menu"
-        aria-label="打开导航菜单"
+        aria-label={navigationOpen ? '关闭导航菜单' : '打开导航菜单'}
+        aria-controls="workspace-sidebar"
+        aria-expanded={navigationOpen}
         onClick={onToggleNavigation}
       >
         <Menu aria-hidden="true" size={22} />

@@ -70,7 +70,7 @@ export function Sidebar({
         aria-label="关闭导航菜单"
         onClick={onCloseMobile}
       />
-      <aside className={`sidebar ${collapsed ? 'collapsed' : ''} ${mobileOpen ? 'mobile-open' : ''}`}>
+      <aside id="workspace-sidebar" className={`sidebar ${collapsed ? 'collapsed' : ''} ${mobileOpen ? 'mobile-open' : ''}`}>
         <div className="sidebar-header">
           <TerminalSquare aria-hidden="true" size={24} />
           <span className="sidebar-label">Dev Workbench</span>

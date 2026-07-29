@@ -1,5 +1,5 @@
 import { Compass, Home, Menu, Search, Wrench } from 'lucide-react'
-import { NavLink } from 'react-router-dom'
+import { NavLink, useLocation } from 'react-router-dom'
 
 interface MobileNavProps {
   onOpenSearch: () => void
@@ -8,6 +8,9 @@ interface MobileNavProps {
 }
 
 export function MobileNav({ onOpenSearch, onOpenTools, onOpenMore }: MobileNavProps) {
+  const location = useLocation()
+  const toolsActive = location.pathname.startsWith('/tools/')
+
   return (
     <nav className="mobile-nav" aria-label="移动端主导航">
       <NavLink to="/" end className={({ isActive }) => (isActive ? 'active' : undefined)}>
@@ -22,7 +25,12 @@ export function MobileNav({ onOpenSearch, onOpenTools, onOpenMore }: MobileNavPr
         <Compass aria-hidden="true" size={22} />
         <span>导航</span>
       </NavLink>
-      <button type="button" onClick={onOpenTools}>
+      <button
+        type="button"
+        className={toolsActive ? 'active' : undefined}
+        aria-current={toolsActive ? 'page' : undefined}
+        onClick={onOpenTools}
+      >
         <Wrench aria-hidden="true" size={22} />
         <span>工具</span>
       </button>
